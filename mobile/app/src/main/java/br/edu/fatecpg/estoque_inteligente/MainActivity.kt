@@ -52,6 +52,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 .addOnFailureListener {
                     Toast.makeText(this, "Falha no login: ${it.message}", Toast.LENGTH_SHORT).show()
+                    println(it.message)
                 }
         }
     }
