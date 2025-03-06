@@ -15,4 +15,7 @@
 local.properties
 **/.env
 **/google-services.json
+**/__pycache__
+**/venv
+**/venv3
 .idea
