@@ -18,4 +18,6 @@ local.properties
 **/__pycache__
 **/venv
 **/venv3
+**/*.db
 .idea
+
