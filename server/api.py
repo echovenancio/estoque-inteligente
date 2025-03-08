@@ -22,36 +22,32 @@ api_key_scheme = APIKeyHeader(name="Authorization", auto_error=False)
 @app.post("/login")
 def login(login: Login) -> LoginRes:
     response = db.login(login.email, login.password)
-    print(response)
     return response
 
 @app.get("/estoque")
-def estoque(request: Request, token = Security(api_key_scheme)):
+def estoque(request: Request, token = Security(api_key_scheme)) -> list[ResProduto]:
     auth_token = get_auth(token)
     estoque = db.get_estoque(auth_token)
-    print(estoque)
     return estoque
 
 @app.get("/estoque/{id}")
-def get_produto(request: Request, id: int, token = Security(api_key_scheme)) -> ResProduto:
+def get_produto(request: Request, id: str, token = Security(api_key_scheme)) -> ResProduto:
     auth_token = get_auth(token)
-    row = db.get_produto(id, auth_token)
-    print(row)
-    return map_produto(row)
+    produto = db.get_produto(id, auth_token)
+    return produto
 
 @app.post("/estoque")
-def add_estoque(produto: Produto, token = Security(api_key_scheme)) -> dict:
+def add_estoque(produto: Produto, token = Security(api_key_scheme)) -> ResProduto:
     auth_token = get_auth(token)
-    id = db.add_estoque(produto, auth_token)
-    print(id)
-    return {"id": id}
+    produto = db.add_estoque(produto, auth_token)
+    return produto 
 
 @app.put("/estoque/{id}")
-def update_estoque(produto: Produto, id: int, token = Security(api_key_scheme)) -> dict:
+def update_estoque(produto: Produto, id: str, token = Security(api_key_scheme)) -> ResProduto:
     auth_token = get_auth(token)
-    rowcount = db.update_estoque(id, produto, auth_token)
-    print(rowcount)
-    return {"rowcount": rowcount}
+    print(produto)
+    updated_produto = db.update_estoque(id, produto, auth_token)
+    return updated_produto 
 
 @app.get("/")
 def root():
