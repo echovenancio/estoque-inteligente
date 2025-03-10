@@ -3,6 +3,7 @@ import os
 import sqlite3
 import requests
 import json
+from uuid import uuid4
 from fastapi import HTTPException
 
 from models import LoginRes, ResProduto
@@ -38,7 +39,10 @@ class DBManager:
     def __create_dev_tables(self):
         conn = sqlite3.connect("database.db")
         cursor = conn.cursor()
-        cursor.execute("CREATE TABLE IF NOT EXISTS estoque (id INTEGER PRIMARY KEY, nm_produto TEXT, quantidade INTEGER, status TEXT)")
+        cursor.execute("CREATE TABLE IF NOT EXISTS estoque (uuid TEXT, nm_produto TEXT, quantidade INTEGER, status TEXT, created_at TEXT, updated_at TEXT)")
+        cursor.execute("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, email TEXT, hash_password TEXT)")
+        cursor.execute("INSERT OR IGNORE INTO users (id, email, hash_password) VALUES (1, 'loja@email.com', '123456')")
+        cursor.execute("INSERT OR IGNORE INTO users (id, email, hash_password) VALUES (2, 'fabrica@email.com', '123456')")
         conn.commit()
         conn.close()
 
@@ -51,7 +55,21 @@ class DBManager:
 
     def login(self, email, password):
         if self.is_dev_env:
-            return
+            cursor = self._get_db_conn().cursor()
+            cursor.execute("SELECT * FROM users WHERE email = ? AND hash_password = ?", (email, password))
+            row = cursor.fetchone()
+            if row:
+                return LoginRes(
+                    kind="identitytoolkit#VerifyPasswordResponse",
+                    localId="fakeid",
+                    email=row[1],
+                    displayName=row[1],
+                    idToken="faketoken",
+                    registered=True,
+                    refreshToken="fakerefreshtoken",
+                    expiresIn="3600")
+            else:
+                return None
         else:
             data = {
                 "email": email,
@@ -68,11 +86,15 @@ class DBManager:
             cursor = self._get_db_conn().cursor()
             cursor.execute("SELECT * FROM estoque")
             rows = cursor.fetchall()
-            return rows
+            print(rows)
+            produtos = []
+            for row in rows:
+                produtos.append(ResProduto(id=row[0], nm_produto=row[1], quantidade=row[2], status=row[3], created_at=row[4], updated_at=row[5]))
+            return produtos
         else:
             headers = get_headers(auth_token)
             response = requests.get(self.firebase_db_url, headers=headers)
-            if response.status_code != 200:
+            if response.status_code == 401:
                 raise HTTPException(status_code=401, detail="Missing or invalid token")
             documents = response.json()["documents"]
             print(response.json())
@@ -85,9 +107,10 @@ class DBManager:
     def get_produto(self, id, auth_token):
         if self.is_dev_env:
             cursor = self._get_db_conn().cursor()
-            cursor.execute("SELECT * FROM estoque WHERE id = ?", (id,))
+            cursor.execute("SELECT * FROM estoque WHERE uuid = ?", (id,))
             row = cursor.fetchone()
-            return row
+            print("pegando produto", row)
+            return ResProduto(id=row[0], nm_produto=row[1], quantidade=row[2], status=row[3], created_at=row[4], updated_at=row[5])
         else:
             print(id)
             headers = get_headers(auth_token)
@@ -95,19 +118,22 @@ class DBManager:
             print(url)
             response = requests.get(url, headers=headers)
             print(response.json())
-            if response.status_code != 200:
+            if response.status_code == 401:
                 raise HTTPException(status_code=401, detail="Missing or invalid token")
             return load_json_produto_into_obj(response.json())
 
     def add_estoque(self, produto, auth_token):
         if self.is_dev_env:
+            uuid = str(uuid4())
             conn = self._get_db_conn()
+            print(produto)
             cursor = conn.cursor() 
             cursor.execute(
-                "INSERT INTO estoque (nm_produto, quantidade, status) VALUES (?, ?)", 
-                (produto.nm_produto, produto.quantidade, produto.status))
+                "INSERT INTO estoque (uuid, nm_produto, quantidade, status, created_at, updated_at) VALUES (?, ?, ?, ?, datetime('now'), datetime('now'))", 
+                (uuid, produto.nm_produto, produto.quantidade, produto.status))
             conn.commit()
-            return cursor.lastrowid
+            produto = self.get_produto(uuid, auth_token)
+            return produto
         else:
             headers = get_headers(auth_token)
             request_data = {
@@ -119,9 +145,8 @@ class DBManager:
             }
             response = requests.post(self.firebase_db_url, data=json.dumps(request_data), headers=headers)
             print(response.json())
-            if response.status_code != 200:
+            if response.status_code == 401:
                 raise HTTPException(status_code=401, detail="Missing or invalid token")
-
             print(response.json())
             return load_json_produto_into_obj(response.json())
 
@@ -130,10 +155,11 @@ class DBManager:
             conn = self._get_db_conn()
             cursor = conn.cursor() 
             cursor.execute(
-                "UPDATE estoque SET nm_produto = ?, quantidade = ?, status = ?, WHERE id = ?", 
+                "UPDATE estoque SET nm_produto = ?, quantidade = ?, status = ?, updated_at = datetime('now') WHERE uuid = ?", 
                 (produto.nm_produto, produto.quantidade, produto.status, id))
             conn.commit()
-            return cursor.rowcount
+            produto = self.get_produto(id, auth_token)
+            return produto
         else:
             headers = get_headers(auth_token)
             request_data = {
@@ -146,6 +172,6 @@ class DBManager:
             url = f"{self.firebase_db_url}{id}"
             response = requests.patch(url, data=json.dumps(request_data), headers=headers)
             print(response.json())
-            if response.status_code != 200:
+            if response.status_code == 401:
                 raise HTTPException(status_code=401, detail="Missing or invalid token")
             return load_json_produto_into_obj(response.json())
