@@ -82,21 +82,16 @@ class DevDBManager(GenericDBManager):
                 refreshToken="fakerefreshtoken",
                 expiresIn="3600")
         else:
-            return LoginRes(
-                kind="identitytoolkit#VerifyPasswordResponse",
-                localId="fakeid",
-                email="",
-                displayName="",
-                idToken="",
-                registered=False,
-                refreshToken="",
-                expiresIn="")
+            raise HTTPException(status_code=401, detail="Invalid email or password") 
 
     def get_estoque(self, auth_token) -> list[ResProduto]:
         cursor = self._get_db_conn().cursor()
-        cursor.execute("SELECT * FROM estoque")
-        rows = cursor.fetchall()
-        print(rows)
+        try:
+            cursor.execute("SELECT * FROM estoque")
+            rows = cursor.fetchall()
+        except Exception as e:
+            print(e)
+            raise HTTPException(status_code=500, detail="Internal server error")
         produtos = []
         for row in rows:
             produtos.append(ResProduto(id=row[0], nm_produto=row[1], quantidade=row[2], status=row[3], created_at=row[4], updated_at=row[5]))
@@ -106,33 +101,42 @@ class DevDBManager(GenericDBManager):
         cursor = self._get_db_conn().cursor()
         cursor.execute("SELECT * FROM estoque WHERE uuid = ?", (id,))
         row = cursor.fetchone()
-        print("pegando produto", row)
+        if not row:
+            raise HTTPException(status_code=404, detail="Produto not found")
         return ResProduto(id=row[0], nm_produto=row[1], quantidade=row[2], status=row[3], created_at=row[4], updated_at=row[5])
 
     def add_estoque(self, produto, auth_token):
         uuid = str(uuid4())
         conn = self._get_db_conn()
         print(produto)
-        cursor = conn.cursor() 
-        cursor.execute(
-            "INSERT INTO estoque (uuid, nm_produto, quantidade, status, created_at, updated_at) VALUES (?, ?, ?, ?, datetime('now'), datetime('now'))", 
-            (uuid, produto.nm_produto, produto.quantidade, produto.status))
-        conn.commit()
+        try:
+            cursor = conn.cursor() 
+            cursor.execute(
+                "INSERT INTO estoque (uuid, nm_produto, quantidade, status, created_at, updated_at) VALUES (?, ?, ?, ?, datetime('now'), datetime('now'))", 
+                (uuid, produto.nm_produto, produto.quantidade, produto.status))
+            conn.commit()
+        except Exception as e:
+            print(e)
+            raise HTTPException(status_code=500, detail="Internal server error")
         produto = self.get_produto(uuid, auth_token)
         return produto
 
     def update_estoque(self, id, produto, auth_token):
         conn = self._get_db_conn()
-        cursor = conn.cursor() 
-        cursor.execute(
-            "UPDATE estoque SET nm_produto = ?, quantidade = ?, status = ?, updated_at = datetime('now') WHERE uuid = ?", 
-            (produto.nm_produto, produto.quantidade, produto.status, id))
-        conn.commit()
+        try:
+            cursor = conn.cursor() 
+            cursor.execute(
+                "UPDATE estoque SET nm_produto = ?, quantidade = ?, status = ?, updated_at = datetime('now') WHERE uuid = ?", 
+                (produto.nm_produto, produto.quantidade, produto.status, id))
+            conn.commit()
+        except Exception as e:
+            print(e)
+            raise HTTPException(status_code=404, detail="Produto not found")
         produto = self.get_produto(id, auth_token)
         return produto
 
 
-class DBManager(GenericDBManager):
+class FirestoreDBManager(GenericDBManager):
     def __init__(self):
         self.firebase_project_id = os.getenv("FIREBASE_PROJECT_ID")
         self.firebase_api_key = os.getenv("FIREBASE_API_KEY")
@@ -146,7 +150,6 @@ class DBManager(GenericDBManager):
                 "returnSecureToken": True
             }
             response = requests.post(self.firebase_auth_url, data=json.dumps(data))
-            print("aqui")
             res = LoginRes.model_validate(response.json())
             return res
 
@@ -207,4 +210,4 @@ class DBManager(GenericDBManager):
         return load_json_produto_into_obj(response.json())
 
 def get_db_manager() -> GenericDBManager:
-    return DevDBManager() if os.getenv("ENV") == "dev" else DBManager()
+    return DevDBManager() if os.getenv("ENV") == "dev" else FirestoreDBManager()
