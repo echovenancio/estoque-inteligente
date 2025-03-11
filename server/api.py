@@ -2,12 +2,12 @@ from fastapi import FastAPI, Request, HTTPException, Security
 from fastapi.openapi.models import APIKey
 from fastapi.openapi.models import SecuritySchemeType
 from fastapi.security.api_key import APIKeyHeader
-from database import DBManager
+from database import get_db_manager
 from pydantic import BaseModel
 from models import ResProduto, Produto, Login, LoginRes
 
 app = FastAPI()
-db = DBManager()
+db = get_db_manager()
 
 def map_produto(row) -> ResProduto:
     return ResProduto(id=row[0], nm_produto=row[1], qt=row[2])
