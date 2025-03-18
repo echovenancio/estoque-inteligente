@@ -1,15 +1,15 @@
-from dotenv import load_dotenv
 import os
 import sqlite3
 import requests
 import json
+import tempfile
 from uuid import uuid4
 from fastapi import HTTPException
 from abc import ABC, abstractmethod
 
 from models import LoginRes, ResProduto
 
-load_dotenv()
+env = os.getenv('ENV')
 
 def load_json_produto_into_obj(json_produto):
     id = json_produto["name"].split("/")[-1]
@@ -54,7 +54,13 @@ class DevDBManager(GenericDBManager):
         pass
 
     def __create_dev_tables(self):
-        conn = sqlite3.connect("database.db")
+        conn = None
+        if env == "test":
+            temp_dir = tempfile.TemporaryDirectory()
+            print(temp_dir.name)
+            conn = sqlite3.connect(f"{temp_dir.name}/database.db")
+        else:
+            conn = sqlite3.connect("database.db")
         cursor = conn.cursor()
         cursor.execute("CREATE TABLE IF NOT EXISTS estoque (uuid TEXT, nm_produto TEXT, quantidade INTEGER, status TEXT, created_at TEXT, updated_at TEXT)")
         cursor.execute("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, email TEXT, hash_password TEXT)")
@@ -210,4 +216,6 @@ class FirestoreDBManager(GenericDBManager):
         return load_json_produto_into_obj(response.json())
 
 def get_db_manager() -> GenericDBManager:
-    return DevDBManager() if os.getenv("ENV") == "dev" else FirestoreDBManager()
+    from dotenv import load_dotenv
+    load_dotenv()
+    return DevDBManager() if env == "dev" or env == "test" else FirestoreDBManager()
