@@ -18,12 +18,13 @@ jobs:
         python-version: '3.10'
     - name: Add conda to system path
       run: |
-        # $CONDA is an environment variable pointing to the root of the miniconda directory
-        echo $CONDA/bin >> $GITHUB_PATH
+        cd server
+        python3 -m venv venv3
+        echo $venv3/bin >> $GITHUB_PATH
     - name: Install dependencies
       run: |
         cd server
-        conda install --yes --file requirements.txt
+        pip install -r requirements.txt
     - name: Test with pytest
       run: |
         ENV=test pytest
