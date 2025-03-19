@@ -154,17 +154,17 @@ class FirestoreDBManager(GenericDBManager):
             return res
 
     def get_estoque(self, auth_token):
-            headers = get_headers(auth_token)
-            response = requests.get(self.firebase_db_url, headers=headers)
-            if response.status_code == 401:
-                raise HTTPException(status_code=401, detail="Missing or invalid token")
-            documents = response.json()["documents"]
-            print(response.json())
-            print(documents)
-            estoque = []
-            for document in documents:
-                estoque.append(load_json_produto_into_obj(document))
-            return estoque
+        headers = get_headers(auth_token)
+        response = requests.get(self.firebase_db_url, headers=headers)
+        if response.status_code == 401:
+            raise HTTPException(status_code=401, detail="Missing or invalid token")
+        documents = response.json()["documents"]
+        print(response.json())
+        print(documents)
+        estoque = []
+        for document in documents:
+            estoque.append(load_json_produto_into_obj(document))
+        return estoque
 
     def get_produto(self, id, auth_token):
         print(id)
@@ -211,3 +211,4 @@ class FirestoreDBManager(GenericDBManager):
 
 def get_db_manager() -> GenericDBManager:
     return DevDBManager() if os.getenv("ENV") == "dev" else FirestoreDBManager()
+
