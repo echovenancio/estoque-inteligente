@@ -13,13 +13,13 @@ class LoginRes(BaseModel):
 class Produto(BaseModel):
     nm_produto: str
     quantidade: int
-    status: str
+    labels: list[str]
 
 class ResProduto(BaseModel):
     id: str
     nm_produto: str
     quantidade: int
-    status: str
+    labels: list[str]
     created_at: str
     updated_at: str
 

@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Request, HTTPException, Security
+import json
 from fastapi.openapi.models import APIKey
 from fastapi.openapi.models import SecuritySchemeType
 from fastapi.security.api_key import APIKeyHeader
@@ -10,7 +11,7 @@ app = FastAPI()
 db = get_db_manager()
 
 def map_produto(row) -> ResProduto:
-    return ResProduto(id=row[0], nm_produto=row[1], qt=row[2])
+    return ResProduto(id=row[0], nm_produto=row[1], quantidade=row[2], labels=json.loads(row[3]), created_at=row[4], updated_at=row[5])
 
 def get_auth(token) -> str:
     if not token or not token.startswith("Bearer "):
@@ -39,8 +40,8 @@ def get_produto(request: Request, id: str, token = Security(api_key_scheme)) -> 
 @app.post("/estoque")
 def add_estoque(produto: Produto, token = Security(api_key_scheme)) -> ResProduto:
     auth_token = get_auth(token)
-    produto = db.add_estoque(produto, auth_token)
-    return produto 
+    ret_prod = db.add_estoque(produto, auth_token)
+    return ret_prod 
 
 @app.put("/estoque/{id}")
 def update_estoque(produto: Produto, id: str, token = Security(api_key_scheme)) -> ResProduto:
