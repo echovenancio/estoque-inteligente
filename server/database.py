@@ -28,7 +28,6 @@ def get_headers(auth_token):
         "Content-Type": "application/json"
     }
 
-<<<<<<< HEAD
 class GenericDBManager(ABC):
     @abstractmethod
     def login(self, email, password) -> LoginRes:
