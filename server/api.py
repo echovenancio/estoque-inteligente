@@ -1,19 +1,17 @@
 from fastapi import FastAPI, Request, HTTPException, Security
+import json
 from fastapi.openapi.models import APIKey
 from fastapi.openapi.models import SecuritySchemeType
 from fastapi.security.api_key import APIKeyHeader
 from database import get_db_manager
 from pydantic import BaseModel
-from dotenv import load_dotenv
 from models import ResProduto, Produto, Login, LoginRes
-
-load_dotenv()
 
 app = FastAPI()
 db = get_db_manager()
 
 def map_produto(row) -> ResProduto:
-    return ResProduto(id=row[0], nm_produto=row[1], quantidade=row[2], status=row[3], created_at=row[4], updated_at=row[5])
+    return ResProduto(id=row[0], nm_produto=row[1], quantidade=row[2], labels=json.loads(row[3]), created_at=row[4], updated_at=row[5])
 
 def get_auth(token) -> str:
     if not token or not token.startswith("Bearer "):

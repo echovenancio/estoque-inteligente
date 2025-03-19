@@ -4,6 +4,12 @@ from api import app
 
 client = TestClient(app)
 
+test_id = ""
+
+header = {
+    "Authorization": "Bearer faketoken"
+}
+
 def test_root():
     response = client.get("/")
     assert response.status_code == 200
@@ -38,24 +44,57 @@ def test_login():
     }
 
 def test_add_estoque():
-    data = {
-        "nm_produto": "Açucar",
-        "quantidade": 0,
-        "status": "A"
-    }
-    header = {
-        "Authorization": "Bearer faketoken"
-    }
-    response = client.post("/estoque", json=data, headers=header)
-    assert response.status_code == 200
-    
-
-def test_update_estoque():
-    pass
+    datas = [
+        {
+            "nm_produto": "Açucar",
+            "quantidade": 1,
+            "labels": ["doce"],
+        },
+        {
+            "nm_produto": "Arroz",
+            "quantidade": 2,
+            "labels": ["salgado", "doce"],
+        },
+        {
+            "nm_produto": "Feijão",
+            "quantidade": 3,
+            "labels": ["salgado"],
+        }
+    ]
+    for data in datas:
+        response = client.post("/estoque", json=data, headers=header)
+        assert response.status_code == 200
+        json = response.json()
+        assert json["nm_produto"] == data["nm_produto"]
+        assert json["quantidade"] == data["quantidade"]
+        assert json["labels"] == data["labels"]
+        assert len(json["id"]) > 0 
+        global test_id
+        test_id = json["id"]
+    assert test_id != ""
 
 def test_estoque():
-    pass
+    response = client.get("/estoque", headers=header)
+    assert response.status_code == 200
+    json = response.json()
+    print(json)
+    assert len(json) == 3
+
+def test_update_estoque():
+    data = {
+        "nm_produto": "Bolo",
+        "quantidade": 3,
+        "labels": ["doce"],
+    }
+    response = client.put(f"/estoque/{test_id}", json=data, headers=header)
+    assert response.status_code == 200
+    json = response.json()
+    assert json["nm_produto"] == data["nm_produto"]
+    assert json["quantidade"] == data["quantidade"]
+    assert json["labels"] == data["labels"]
 
 def test_get_produto():
-    pass
-
+    response = client.get(f"/estoque/{test_id}", headers=header)
+    assert response.status_code == 200
+    json = response.json()
+    assert json["id"] == test_id
