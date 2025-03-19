@@ -211,4 +211,3 @@ class FirestoreDBManager(GenericDBManager):
 
 def get_db_manager() -> GenericDBManager:
     return DevDBManager() if os.getenv("ENV") == "dev" else FirestoreDBManager()
-
