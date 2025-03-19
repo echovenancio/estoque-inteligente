@@ -1,23 +1,29 @@
 import os
+import sys
+import logging
 import sqlite3
 import requests
 import json
-import tempfile
 from uuid import uuid4
 from fastapi import HTTPException
 from abc import ABC, abstractmethod
+from dotenv import load_dotenv
 
 from models import LoginRes, ResProduto
 
+load_dotenv()
 env = os.getenv('ENV')
 
 def load_json_produto_into_obj(json_produto):
     id = json_produto["name"].split("/")[-1]
+    labels = []
+    for json_label in json_produto["fields"]["labels"]["arrayValue"]["values"]:
+        labels.append(json_label["stringValue"])
     produto = ResProduto(
         id=id, 
         nm_produto=json_produto["fields"]["nm_produto"]["stringValue"], 
         quantidade=json_produto["fields"]["quantidade"]["integerValue"],
-        status=json_produto["fields"]["status"]["stringValue"],
+        labels=labels,
         created_at=json_produto["createTime"],
         updated_at=json_produto["updateTime"])
     return produto
@@ -50,28 +56,35 @@ class GenericDBManager(ABC):
         pass
 
 class DevDBManager(GenericDBManager):
+
     def __init__(self):
         pass
 
     def __create_dev_tables(self):
-        conn = None
-        if env == "test":
-            temp_dir = tempfile.TemporaryDirectory()
-            print(temp_dir.name)
-            conn = sqlite3.connect(f"{temp_dir.name}/database.db")
-        else:
-            conn = sqlite3.connect("database.db")
-        cursor = conn.cursor()
-        cursor.execute("CREATE TABLE IF NOT EXISTS estoque (uuid TEXT, nm_produto TEXT, quantidade INTEGER, status TEXT, created_at TEXT, updated_at TEXT)")
-        cursor.execute("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, email TEXT, hash_password TEXT)")
-        cursor.execute("INSERT OR IGNORE INTO users (id, email, hash_password) VALUES (1, 'loja@email.com', '123456')")
-        cursor.execute("INSERT OR IGNORE INTO users (id, email, hash_password) VALUES (2, 'fabrica@email.com', '123456')")
-        conn.commit()
-        conn.close() 
+            conn = None
+            if env == "test":
+                self.url = "file::memory:?cache=shared"
+                conn = sqlite3.connect(self.url, uri=True)
+            else:
+                self.url = "database.db"
+                conn = sqlite3.connect(self.url)
+            cursor = conn.cursor()
+            cursor.execute("CREATE TABLE IF NOT EXISTS estoque (uuid TEXT, nm_produto TEXT, quantidade INTEGER, labels TEXT, created_at TEXT, updated_at TEXT)")
+            cursor.execute("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, email TEXT, hash_password TEXT)")
+            cursor.execute("INSERT OR IGNORE INTO users (id, email, hash_password) VALUES (1, 'loja@email.com', '123456')")
+            cursor.execute("INSERT OR IGNORE INTO users (id, email, hash_password) VALUES (2, 'fabrica@email.com', '123456')")
+            conn.commit()
+            cursor.close()
+            self.conn = conn
+            print(self.url)
 
     def _get_db_conn(self):
         self.__create_dev_tables()
-        return sqlite3.connect("database.db")
+        print("URL: ", self.url)
+        if self.url == None:
+            logging.error("Database URL not set")
+            sys.exit(1)
+        return self.conn
 
     def login(self, email, password):
         cursor = self._get_db_conn().cursor()
@@ -100,7 +113,7 @@ class DevDBManager(GenericDBManager):
             raise HTTPException(status_code=500, detail="Internal server error")
         produtos = []
         for row in rows:
-            produtos.append(ResProduto(id=row[0], nm_produto=row[1], quantidade=row[2], status=row[3], created_at=row[4], updated_at=row[5]))
+            produtos.append(ResProduto(id=row[0], nm_produto=row[1], quantidade=row[2], labels=json.loads(row[3]), created_at=row[4], updated_at=row[5]))
         return produtos
 
     def get_produto(self, id, auth_token):
@@ -109,7 +122,7 @@ class DevDBManager(GenericDBManager):
         row = cursor.fetchone()
         if not row:
             raise HTTPException(status_code=404, detail="Produto not found")
-        return ResProduto(id=row[0], nm_produto=row[1], quantidade=row[2], status=row[3], created_at=row[4], updated_at=row[5])
+        return ResProduto(id=row[0], nm_produto=row[1], quantidade=row[2], labels=json.loads(row[3]), created_at=row[4], updated_at=row[5])
 
     def add_estoque(self, produto, auth_token):
         uuid = str(uuid4())
@@ -118,8 +131,8 @@ class DevDBManager(GenericDBManager):
         try:
             cursor = conn.cursor() 
             cursor.execute(
-                "INSERT INTO estoque (uuid, nm_produto, quantidade, status, created_at, updated_at) VALUES (?, ?, ?, ?, datetime('now'), datetime('now'))", 
-                (uuid, produto.nm_produto, produto.quantidade, produto.status))
+                "INSERT INTO estoque (uuid, nm_produto, quantidade, labels, created_at, updated_at) VALUES (?, ?, ?, ?, datetime('now'), datetime('now'))", 
+                (uuid, produto.nm_produto, produto.quantidade, json.dumps(produto.labels)))
             conn.commit()
         except Exception as e:
             print(e)
@@ -132,8 +145,8 @@ class DevDBManager(GenericDBManager):
         try:
             cursor = conn.cursor() 
             cursor.execute(
-                "UPDATE estoque SET nm_produto = ?, quantidade = ?, status = ?, updated_at = datetime('now') WHERE uuid = ?", 
-                (produto.nm_produto, produto.quantidade, produto.status, id))
+                "UPDATE estoque SET nm_produto = ?, quantidade = ?, labels = ?, updated_at = datetime('now') WHERE uuid = ?", 
+                (produto.nm_produto, produto.quantidade, json.dumps(produto.labels), id))
             conn.commit()
         except Exception as e:
             print(e)
@@ -185,11 +198,12 @@ class FirestoreDBManager(GenericDBManager):
 
     def add_estoque(self, produto, auth_token):
         headers = get_headers(auth_token)
+        labels = {"arrayValue": {"values": [{"stringValue": label} for label in produto.labels]}}
         request_data = {
             "fields": {
                 "nm_produto": {"stringValue": produto.nm_produto},
                 "quantidade": {"integerValue": produto.quantidade},
-                "status": {"stringValue": produto.status} 
+                "labels": labels
             }
         }
         response = requests.post(self.firebase_db_url, data=json.dumps(request_data), headers=headers)
@@ -201,11 +215,12 @@ class FirestoreDBManager(GenericDBManager):
 
     def update_estoque(self, id, produto, auth_token):
         headers = get_headers(auth_token)
+        labels = {"arrayValue": {"values": [{"stringValue": label} for label in produto.labels]}}
         request_data = {
             "fields": {
                 "nm_produto": {"stringValue": produto.nm_produto},
                 "quantidade": {"integerValue": produto.quantidade},
-                "status": {"stringValue": produto.status} 
+                "labels": labels
             }
         }
         url = f"{self.firebase_db_url}{id}"
@@ -218,4 +233,7 @@ class FirestoreDBManager(GenericDBManager):
 def get_db_manager() -> GenericDBManager:
     from dotenv import load_dotenv
     load_dotenv()
-    return DevDBManager() if env == "dev" or env == "test" else FirestoreDBManager()
+    if env == 'dev' or env == 'test':
+        return DevDBManager()
+    else:
+        return FirestoreDBManager()
