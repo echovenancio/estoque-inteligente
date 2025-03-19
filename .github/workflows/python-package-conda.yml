@@ -23,7 +23,7 @@ jobs:
     - name: Install dependencies
       run: |
         cd server
-        conda install --yes --file requirements.tx
+        conda install --yes --file requirements.txt
     - name: Test with pytest
       run: |
         ENV=test pytest
