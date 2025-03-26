@@ -72,11 +72,11 @@ class ApiAccess {
         return estoque
     }
 
-    suspend fun get_produto(id: Int): ResProduto {
+    suspend fun get_produto(id: String): ResProduto {
         val client = OkHttpClient()
         val token = CredDao().getToken()
         val request = Request.Builder()
-            .url("${api_url}/${id}")
+            .url("${api_url}/estoque/${id}")
             .header("Authorization", "Bearer ${token}")
             .get()
             .build()
@@ -102,7 +102,7 @@ class ApiAccess {
         return produto
     }
 
-    suspend fun update_produto(id: Int, produto: Produto): ResProduto {
+    suspend fun update_produto(id: String, produto: Produto): ResProduto {
         val json = Json.encodeToString(produto)
         val requestBody = json.toRequestBody(json_media_type)
         val token = CredDao().getToken()
