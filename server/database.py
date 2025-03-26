@@ -23,6 +23,8 @@ def load_json_produto_into_obj(json_produto):
         id=id, 
         nm_produto=json_produto["fields"]["nm_produto"]["stringValue"], 
         quantidade=json_produto["fields"]["quantidade"]["integerValue"],
+        anotation=json_produto["fields"]["anotation"]["stringValue"],
+        cluster_id=json_produto["fields"]["cluster_id"]["integerValue"],
         labels=labels,
         created_at=json_produto["createTime"],
         updated_at=json_produto["updateTime"])
@@ -69,7 +71,7 @@ class DevDBManager(GenericDBManager):
                 self.url = "database.db"
                 conn = sqlite3.connect(self.url)
             cursor = conn.cursor()
-            cursor.execute("CREATE TABLE IF NOT EXISTS estoque (uuid TEXT, nm_produto TEXT, quantidade INTEGER, labels TEXT, created_at TEXT, updated_at TEXT)")
+            cursor.execute("CREATE TABLE IF NOT EXISTS estoque (uuid TEXT, nm_produto TEXT, quantidade INTEGER, labels TEXT, anotation TEXT, cluster_id INTEGER, created_at TEXT, updated_at TEXT)")
             cursor.execute("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, email TEXT, hash_password TEXT)")
             cursor.execute("INSERT OR IGNORE INTO users (id, email, hash_password) VALUES (1, 'loja@email.com', '123456')")
             cursor.execute("INSERT OR IGNORE INTO users (id, email, hash_password) VALUES (2, 'fabrica@email.com', '123456')")
@@ -113,7 +115,8 @@ class DevDBManager(GenericDBManager):
             raise HTTPException(status_code=500, detail="Internal server error")
         produtos = []
         for row in rows:
-            produtos.append(ResProduto(id=row[0], nm_produto=row[1], quantidade=row[2], labels=json.loads(row[3]), created_at=row[4], updated_at=row[5]))
+            print(row)
+            produtos.append(ResProduto(id=row[0], nm_produto=row[1], quantidade=row[2], labels=json.loads(row[3]), anotation=row[4], cluster_id=row[5], created_at=row[6], updated_at=row[7]))
         return produtos
 
     def get_produto(self, id, auth_token):
@@ -122,7 +125,7 @@ class DevDBManager(GenericDBManager):
         row = cursor.fetchone()
         if not row:
             raise HTTPException(status_code=404, detail="Produto not found")
-        return ResProduto(id=row[0], nm_produto=row[1], quantidade=row[2], labels=json.loads(row[3]), created_at=row[4], updated_at=row[5])
+        return ResProduto(id=row[0], nm_produto=row[1], quantidade=row[2], labels=json.loads(row[3]), anotation=row[4], cluster_id=row[5], created_at=row[6], updated_at=row[7])
 
     def add_estoque(self, produto, auth_token):
         uuid = str(uuid4())
@@ -131,8 +134,8 @@ class DevDBManager(GenericDBManager):
         try:
             cursor = conn.cursor() 
             cursor.execute(
-                "INSERT INTO estoque (uuid, nm_produto, quantidade, labels, created_at, updated_at) VALUES (?, ?, ?, ?, datetime('now'), datetime('now'))", 
-                (uuid, produto.nm_produto, produto.quantidade, json.dumps(produto.labels)))
+                "INSERT INTO estoque (uuid, nm_produto, quantidade, labels, anotation, cluster_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))", 
+                (uuid, produto.nm_produto, produto.quantidade, json.dumps(produto.labels), produto.anotation, -1))
             conn.commit()
         except Exception as e:
             print(e)
@@ -145,14 +148,26 @@ class DevDBManager(GenericDBManager):
         try:
             cursor = conn.cursor() 
             cursor.execute(
-                "UPDATE estoque SET nm_produto = ?, quantidade = ?, labels = ?, updated_at = datetime('now') WHERE uuid = ?", 
-                (produto.nm_produto, produto.quantidade, json.dumps(produto.labels), id))
+                "UPDATE estoque SET nm_produto = ?, quantidade = ?, labels = ?, anotation = ?, updated_at = datetime('now') WHERE uuid = ?", 
+                (produto.nm_produto, produto.quantidade, json.dumps(produto.labels), produto.anotation, id))
             conn.commit()
         except Exception as e:
             print(e)
             raise HTTPException(status_code=404, detail="Produto not found")
         produto = self.get_produto(id, auth_token)
         return produto
+
+    def update_cluster(self, id, cluster_id):
+        conn = self._get_db_conn()
+        try:
+            cursor = conn.cursor() 
+            cursor.execute(
+                "UPDATE estoque SET cluster_id = ? WHERE uuid = ?", 
+                (cluster_id, id))
+            conn.commit()
+        except Exception as e:
+            print(e)
+            raise HTTPException(status_code=404, detail="Produto not found")
 
 
 class FirestoreDBManager(GenericDBManager):
@@ -203,7 +218,9 @@ class FirestoreDBManager(GenericDBManager):
             "fields": {
                 "nm_produto": {"stringValue": produto.nm_produto},
                 "quantidade": {"integerValue": produto.quantidade},
-                "labels": labels
+                "labels": labels,
+                "anotation": {"stringValue": produto.anotation},
+                "cluster_id": {"integerValue": -1}
             }
         }
         response = requests.post(self.firebase_db_url, data=json.dumps(request_data), headers=headers)
@@ -220,7 +237,8 @@ class FirestoreDBManager(GenericDBManager):
             "fields": {
                 "nm_produto": {"stringValue": produto.nm_produto},
                 "quantidade": {"integerValue": produto.quantidade},
-                "labels": labels
+                "labels": labels,
+                "anotation": {"stringValue": produto.anotation},
             }
         }
         url = f"{self.firebase_db_url}{id}"
@@ -229,6 +247,21 @@ class FirestoreDBManager(GenericDBManager):
         if response.status_code == 401:
             raise HTTPException(status_code=401, detail="Missing or invalid token")
         return load_json_produto_into_obj(response.json())
+
+    def update_cluster(self, id, cluster_id, auth_token):
+        headers = get_headers(auth_token)
+        request_data = {
+            "fields": {
+                "cluster_id": {"integerValue": cluster_id}
+            }
+        }
+        url = f"{self.firebase_db_url}{id}"
+        response = requests.patch(url, data=json.dumps(request_data), headers=headers)
+        print(response.json())
+        if response.status_code == 401:
+            raise HTTPException(status_code=401, detail="Missing or invalid token")
+        return load_json_produto_into_obj(response.json())
+
 
 def get_db_manager() -> GenericDBManager:
     from dotenv import load_dotenv

@@ -2,8 +2,11 @@ package br.edu.fatecpg.estoque_inteligente.controller
 
 import android.util.Log
 import br.edu.fatecpg.estoque_inteligente.BuildConfig
+import br.edu.fatecpg.estoque_inteligente.dao.CredDao
 import br.edu.fatecpg.estoque_inteligente.model.Login
 import br.edu.fatecpg.estoque_inteligente.model.LoginRes
+import br.edu.fatecpg.estoque_inteligente.model.Produto
+import br.edu.fatecpg.estoque_inteligente.model.ResProduto
 import com.google.android.gms.common.api.Api.Client
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -53,5 +56,65 @@ class ApiAccess {
         Log.i("res", responseBody.toString())
         val loginRes = Json.decodeFromString<LoginRes>(responseBody)
         return loginRes
+    }
+
+    suspend fun get_estoque(): List<ResProduto> {
+        val client = OkHttpClient()
+        val token = CredDao().getToken()
+        val request = Request.Builder()
+            .url("${api_url}/estoque")
+            .header("Authorization", "Bearer ${token}")
+            .get()
+            .build()
+        val response = makeReq(client, request)
+        val responseBody = response.body?.string() ?: throw Exception("Deu pau ai")
+        val estoque = Json.decodeFromString<List<ResProduto>>(responseBody)
+        return estoque
+    }
+
+    suspend fun get_produto(id: Int): ResProduto {
+        val client = OkHttpClient()
+        val token = CredDao().getToken()
+        val request = Request.Builder()
+            .url("${api_url}/${id}")
+            .header("Authorization", "Bearer ${token}")
+            .get()
+            .build()
+        val response = makeReq(client, request)
+        val responseBody = response.body?.string() ?: throw Exception("Deu pau ai")
+        val produto = Json.decodeFromString<ResProduto>(responseBody)
+        return produto
+    }
+
+    suspend fun add_produto(produto: Produto): ResProduto {
+        val json = Json.encodeToString(produto)
+        val requestBody = json.toRequestBody(json_media_type)
+        val token = CredDao().getToken() 
+        val client = OkHttpClient()
+        val request = Request.Builder()
+            .url("${api_url}/estoque")
+            .header("Authorization", "Bearer ${token}")
+            .post(requestBody)
+            .build()
+        val response = makeReq(client, request)
+        val responseBody = response.body?.string() ?: throw Exception("Deu pau ai")
+        val produto = Json.decodeFromString<ResProduto>(responseBody)
+        return produto
+    }
+
+    suspend fun update_produto(id: Int, produto: Produto): ResProduto {
+        val json = Json.encodeToString(produto)
+        val requestBody = json.toRequestBody(json_media_type)
+        val token = CredDao().getToken()
+        val client = OkHttpClient()
+        val request = Request.Builder()
+            .url("${api_url}/estoque/${id}")
+            .header("Authorization", "Bearer ${token}")
+            .put(requestBody)
+            .build()
+        val response = makeReq(client, request)
+        val responseBody = response.body?.string() ?: throw Exception("Deu pau ai")
+        val produto = Json.decodeFromString<ResProduto>(responseBody)
+        return produto
     }
 }

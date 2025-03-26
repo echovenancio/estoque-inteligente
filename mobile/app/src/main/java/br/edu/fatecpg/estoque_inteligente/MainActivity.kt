@@ -8,6 +8,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import br.edu.fatecpg.estoque_inteligente.controller.ApiAccess
+import br.edu.fatecpg.estoque_inteligente.dao.CredDao
 import br.edu.fatecpg.estoque_inteligente.databinding.ActivityMainBinding
 import br.edu.fatecpg.estoque_inteligente.model.Login
 import br.edu.fatecpg.estoque_inteligente.view.FabricaActivity
@@ -42,7 +43,10 @@ class MainActivity : AppCompatActivity() {
             val login = Login(email, senha)
             lifecycleScope.launch(Dispatchers.IO) {
                 val res = api.login(login)
+                val credDao = CredDao()
+                credDao.setToken(res.idToken)
                 Log.i("login", res.toString())
+
                 withContext(Dispatchers.Main) {
                     if (res.email.equals("loja@email.com")) {
                         startActivity(Intent(this@MainActivity, LojaActivity::class.java))
