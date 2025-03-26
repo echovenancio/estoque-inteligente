@@ -1,8 +1,15 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     id("com.google.gms.google-services")
     kotlin("plugin.serialization") version "2.1.20"
+}
+
+val apiPropertiesFile = rootProject.file("api.properties")
+val apiProperties = Properties().apply {
+    load(apiPropertiesFile.inputStream())
 }
 
 android {
@@ -26,6 +33,12 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            buildConfigField("String", "API_URL", "\"${apiProperties["apiUrl"]}\"")
+            resValue("string", "api_url", "${apiProperties["apiUrl"]}")
+        }
+        debug {
+            buildConfigField("String", "API_URL", "\"${apiProperties["apiUrl"]}\"")
+            resValue("string", "api_url", "${apiProperties["apiUrl"]}")
         }
     }
     compileOptions {
@@ -38,6 +51,7 @@ android {
 
     buildFeatures{
         viewBinding= true
+        buildConfig = true
     }
 
 }

@@ -1,6 +1,7 @@
 package br.edu.fatecpg.estoque_inteligente.controller
 
 import android.util.Log
+import br.edu.fatecpg.estoque_inteligente.BuildConfig
 import br.edu.fatecpg.estoque_inteligente.model.Login
 import br.edu.fatecpg.estoque_inteligente.model.LoginRes
 import com.google.android.gms.common.api.Api.Client
@@ -24,6 +25,7 @@ class ApiAccess {
     private val json_media_type = "application/json; charset=utf-8".toMediaType()
 
     init {
+        api_url = BuildConfig.API_URL
     }
 
     private suspend fun makeReq(client: OkHttpClient, request: Request): Response {

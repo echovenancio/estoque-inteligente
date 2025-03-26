@@ -19,5 +19,6 @@ local.properties
 **/venv
 **/venv3
 **/*.db
+mobile/api.properties
 .idea
 
