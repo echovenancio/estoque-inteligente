@@ -8,4 +8,4 @@ apiUrl = _url_da_api_
 ```
 
 Para conseguir o valor de `_url_da_api_` você deve rodar o a api na pasta `server` e procurar o ip da máquina que está rodando a api. O ip da máquina pode ser encontrado no terminal que está rodando a api.
-o formato da string `apiUrl` deve ser `http://_ip_da_maquina_:8000/`
+o formato da string `apiUrl` deve ser `http://_ip_da_maquina_:8000`
