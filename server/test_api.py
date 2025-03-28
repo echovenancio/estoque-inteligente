@@ -49,16 +49,19 @@ def test_add_estoque():
             "nm_produto": "Açucar",
             "quantidade": 1,
             "labels": ["doce"],
+            "anotation": "Açucar refinado"
         },
         {
             "nm_produto": "Arroz",
             "quantidade": 2,
             "labels": ["salgado", "doce"],
+            "anotation": "Arroz branco"
         },
         {
             "nm_produto": "Feijão",
             "quantidade": 3,
             "labels": ["salgado"],
+            "anotation": "Feijão carioca"
         }
     ]
     for data in datas:
@@ -68,6 +71,8 @@ def test_add_estoque():
         assert json["nm_produto"] == data["nm_produto"]
         assert json["quantidade"] == data["quantidade"]
         assert json["labels"] == data["labels"]
+        assert json["anotation"] == data["anotation"]
+        assert json["cluster_id"] == -1
         assert len(json["id"]) > 0 
         global test_id
         test_id = json["id"]
@@ -85,13 +90,16 @@ def test_update_estoque():
         "nm_produto": "Bolo",
         "quantidade": 3,
         "labels": ["doce"],
+        "anotation": "Bolo de chocolate"
     }
+    print(test_id)
     response = client.put(f"/estoque/{test_id}", json=data, headers=header)
     assert response.status_code == 200
     json = response.json()
     assert json["nm_produto"] == data["nm_produto"]
     assert json["quantidade"] == data["quantidade"]
     assert json["labels"] == data["labels"]
+    assert json["anotation"] == data["anotation"]
 
 def test_get_produto():
     response = client.get(f"/estoque/{test_id}", headers=header)

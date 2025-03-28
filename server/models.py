@@ -14,12 +14,15 @@ class Produto(BaseModel):
     nm_produto: str
     quantidade: int
     labels: list[str]
+    anotation: str
 
 class ResProduto(BaseModel):
     id: str
     nm_produto: str
     quantidade: int
     labels: list[str]
+    anotation: str
+    cluster_id: int
     created_at: str
     updated_at: str
 
