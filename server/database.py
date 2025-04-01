@@ -161,22 +161,15 @@ class DevDBManager(GenericDBManager):
         produto = self.get_produto(id, auth_token)
         return produto
 
+    # Temporário, esse código é bem ridiculo mas é só pra ter algo rápido, vou refatorar isso.
     def get_categorias(self, auth_token) -> list[str]:
-        conn = self._get_db_conn()
-        rows = []
+        estoque = self.get_estoque(auth_token)
         categorias = set()
-        try:
-            cursor = conn.cursor()
-            cursor.execute("SELECT labels from estoque")
-            rows = cursor.fetchall()
-        except Exception as e:
-            print(e)
-            raise HTTPException(status_code=500, detail="Deu pau ai")
-        for row in rows:
-            for label in row:
+        for produto in estoque:
+            for label in produto.labels:
                 categorias.add(label)
         return list(categorias)
-
+    
     def update_cluster(self, id, cluster_id):
         conn = self._get_db_conn()
         try:
