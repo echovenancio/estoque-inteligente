@@ -57,6 +57,10 @@ class GenericDBManager(ABC):
     def update_estoque(self, id, produto, auth_token) -> ResProduto:
         pass
 
+    @abstractmethod
+    def get_categorias(self, auth_token) -> list[str]:
+        pass
+
 class DevDBManager(GenericDBManager):
 
     def __init__(self):
@@ -157,6 +161,15 @@ class DevDBManager(GenericDBManager):
         produto = self.get_produto(id, auth_token)
         return produto
 
+    # Temporário, esse código é bem ridiculo mas é só pra ter algo rápido, vou refatorar isso.
+    def get_categorias(self, auth_token) -> list[str]:
+        estoque = self.get_estoque(auth_token)
+        categorias = set()
+        for produto in estoque:
+            for label in produto.labels:
+                categorias.add(label)
+        return list(categorias)
+    
     def update_cluster(self, id, cluster_id):
         conn = self._get_db_conn()
         try:
@@ -200,6 +213,15 @@ class FirestoreDBManager(GenericDBManager):
             estoque.append(load_json_produto_into_obj(document))
         return estoque
 
+    # Temporário, esse código é bem ridiculo mas é só pra ter algo rápido, vou refatorar isso.
+    def get_categorias(self, auth_token) -> list[str]:
+        produtos = self.get_estoque(auth_token)
+        categorias = set()
+        for produto in produtos:
+            for label in produto.labels:
+                categorias.add(label)
+        return list(categorias)
+
     def get_produto(self, id, auth_token):
         print(id)
         headers = get_headers(auth_token)
@@ -210,6 +232,7 @@ class FirestoreDBManager(GenericDBManager):
         if response.status_code == 401:
             raise HTTPException(status_code=401, detail="Missing or invalid token")
         return load_json_produto_into_obj(response.json())
+
 
     def add_estoque(self, produto, auth_token):
         headers = get_headers(auth_token)

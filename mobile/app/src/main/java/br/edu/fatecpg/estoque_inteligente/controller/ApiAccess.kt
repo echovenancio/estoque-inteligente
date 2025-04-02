@@ -72,6 +72,20 @@ class ApiAccess {
         return estoque
     }
 
+    suspend fun get_categorias(): List<String> {
+        val client = OkHttpClient()
+        val token = CredDao().getToken()
+        val request = Request.Builder()
+            .url("${api_url}/categorias")
+            .header("Authorization", "Bearer ${token}")
+            .get()
+            .build()
+        val response = makeReq(client, request)
+        val responseBody = response.body?.string() ?: throw Exception("Deu pau ai")
+        val estoque = Json.decodeFromString<List<String>>(responseBody)
+        return estoque
+    }
+
     suspend fun get_produto(id: String): ResProduto {
         val client = OkHttpClient()
         val token = CredDao().getToken()

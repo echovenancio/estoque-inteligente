@@ -31,6 +31,13 @@ def estoque(request: Request, token = Security(api_key_scheme)) -> list[ResProdu
     estoque = db.get_estoque(auth_token)
     return estoque
 
+@app.get("/categorias")
+def get_categorias(request: Request, token = Security(api_key_scheme)) -> list[str]:
+    auth_token = get_auth(token)
+    categorias = db.get_categorias(auth_token)
+    return categorias
+
+
 @app.get("/estoque/{id}")
 def get_produto(request: Request, id: str, token = Security(api_key_scheme)) -> ResProduto:
     auth_token = get_auth(token)
