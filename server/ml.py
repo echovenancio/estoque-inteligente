@@ -30,7 +30,7 @@ def model_need_refit(estoque_size: int, model: KMeans) -> bool:
     return cluster_estimate != len(model.cluster_centers_)
 
 def document_from_produto(produto: ResProduto) -> str:
-    doc = f"{produto.nm_produto} {produto.anotation} {' '.join(produto.labels)}"
+    doc = f"{produto.nm_produto} {' '.join(produto.labels)}"
     return doc
 
 def return_clustered_row(produto: Produto, model: KMeans) -> int:
@@ -41,7 +41,7 @@ def return_clustered_row(produto: Produto, model: KMeans) -> int:
 
 def return_clustered_data(lista_produtos: list[Produto], model: KMeans) -> pd.DataFrame:
     docs = [document_from_produto(produto) for produto in lista_produtos]
-    vectorizer = TfidfVectorizer(stop_words=stopwords_pt)
+    vectorizer = TfidfVectorizer(stop_words=stopwords_pt, lowercase=True)
     X = vectorizer.fit_transform(docs)
     clustered_data = model.predict(X)
     return pd.DataFrame({'Produto': lista_produtos, 'Cluster': clustered_data})
