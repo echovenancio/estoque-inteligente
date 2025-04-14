@@ -61,6 +61,14 @@ class GenericDBManager(ABC):
     def get_categorias(self, auth_token) -> list[str]:
         pass
 
+    @abstractmethod
+    def get_estoque_size(self, auth_token) -> int:
+        pass
+
+    @abstractmethod
+    def update_cluster(self, id, cluster_id, auth_token):
+        pass
+
 class DevDBManager(GenericDBManager):
 
     def __init__(self):
@@ -112,7 +120,7 @@ class DevDBManager(GenericDBManager):
     def get_estoque(self, auth_token) -> list[ResProduto]:
         cursor = self._get_db_conn().cursor()
         try:
-            cursor.execute("SELECT * FROM estoque")
+            cursor.execute("SELECT * FROM estoque ORDER BY cluster_id ASC")
             rows = cursor.fetchall()
         except Exception as e:
             print(e)
@@ -170,17 +178,26 @@ class DevDBManager(GenericDBManager):
                 categorias.add(label)
         return list(categorias)
     
-    def update_cluster(self, id, cluster_id):
+    def update_cluster(self, id, cluster_id, auth_token):
         conn = self._get_db_conn()
         try:
             cursor = conn.cursor() 
             cursor.execute(
-                "UPDATE estoque SET cluster_id = ? WHERE uuid = ?", 
+                "UPDATE estoque SET cluster_id = ?, updated_at = datetime('now') WHERE uuid = ?",
                 (cluster_id, id))
             conn.commit()
         except Exception as e:
             print(e)
             raise HTTPException(status_code=404, detail="Produto not found")
+
+    def get_estoque_size(self, auth_token) -> int:
+        cursor = self._get_db_conn().cursor()
+        cursor.execute("SELECT COUNT(*) FROM estoque")
+        row = cursor.fetchone()
+        if row:
+            return row[0]
+        else:
+            raise HTTPException(status_code=500, detail="Internal server error")
 
 
 class FirestoreDBManager(GenericDBManager):
@@ -202,7 +219,7 @@ class FirestoreDBManager(GenericDBManager):
 
     def get_estoque(self, auth_token):
         headers = get_headers(auth_token)
-        response = requests.get(self.firebase_db_url, headers=headers)
+        response = requests.get(f"self.firebase_db_url/orderBy=\"cluster_id\"", headers=headers)
         if response.status_code == 401:
             raise HTTPException(status_code=401, detail="Missing or invalid token")
         documents = response.json()["documents"]
@@ -283,7 +300,14 @@ class FirestoreDBManager(GenericDBManager):
         print(response.json())
         if response.status_code == 401:
             raise HTTPException(status_code=401, detail="Missing or invalid token")
-        return load_json_produto_into_obj(response.json())
+
+    def get_estoque_size(self, auth_token) -> int:
+        headers = get_headers(auth_token)
+        response = requests.get(self.firebase_db_url, headers=headers)
+        if response.status_code == 401:
+            raise HTTPException(status_code=401, detail="Missing or invalid token")
+        documents = response.json()["documents"]
+        return len(documents)
 
 
 def get_db_manager() -> GenericDBManager:
