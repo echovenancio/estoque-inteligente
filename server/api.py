@@ -1,5 +1,7 @@
 from fastapi import FastAPI, Request, HTTPException, Security
 import json
+import ml
+import threading
 from fastapi.openapi.models import APIKey
 from fastapi.openapi.models import SecuritySchemeType
 from fastapi.security.api_key import APIKeyHeader
@@ -9,6 +11,18 @@ from models import ResProduto, Produto, Login, LoginRes
 
 app = FastAPI()
 db = get_db_manager()
+
+def background_job(func, *args):
+    t = threading.Thread(target=func, args=args)
+    t.daemon = True
+    t.start()
+
+def update_cluster(auth_token: str):
+    produtos = db.get_estoque(auth_token)
+    updated_cluster_id = ml.fit_model(produtos, max(1, int(len(produtos) / 5)))
+    for produto, cluster_id in zip(produtos, updated_cluster_id):
+        print(f"Produto: {produto.nm_produto}, Cluster ID: {cluster_id}")
+        db.update_cluster(produto.id, int(cluster_id), auth_token)
 
 def map_produto(row) -> ResProduto:
     return ResProduto(id=row[0], nm_produto=row[1], quantidade=row[2], labels=json.loads(row[3]), created_at=row[4], updated_at=row[5])
@@ -48,6 +62,7 @@ def get_produto(request: Request, id: str, token = Security(api_key_scheme)) -> 
 def add_estoque(produto: Produto, token = Security(api_key_scheme)) -> ResProduto:
     auth_token = get_auth(token)
     ret_prod = db.add_estoque(produto, auth_token)
+    background_job(update_cluster, token)
     return ret_prod 
 
 @app.put("/estoque/{id}")
@@ -55,6 +70,7 @@ def update_estoque(produto: Produto, id: str, token = Security(api_key_scheme)) 
     auth_token = get_auth(token)
     print(produto)
     updated_produto = db.update_estoque(id, produto, auth_token)
+    background_job(update_estoque, token)
     return updated_produto 
 
 @app.get("/")
