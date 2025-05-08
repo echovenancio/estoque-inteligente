@@ -8,6 +8,7 @@ from uuid import uuid4
 from fastapi import HTTPException
 from abc import ABC, abstractmethod
 from dotenv import load_dotenv
+from mapper import map_product_to_response
 
 from models import LoginRes, ResProduto
 
@@ -22,7 +23,8 @@ def load_json_produto_into_obj(json_produto):
     produto = ResProduto(
         id=id, 
         nm_produto=json_produto["fields"]["nm_produto"]["stringValue"], 
-        quantidade=json_produto["fields"]["quantidade"]["integerValue"],
+        type_quantidade=json_produto["fields"]["type_quantidade"]["stringValue"],
+        val_quantidade=json_produto["fields"]["val_quantidade"]["doubleValue"],
         anotation=json_produto["fields"]["anotation"]["stringValue"],
         cluster_id=json_produto["fields"]["cluster_id"]["integerValue"],
         labels=labels,
@@ -83,18 +85,16 @@ class DevDBManager(GenericDBManager):
                 self.url = "database.db"
                 conn = sqlite3.connect(self.url)
             cursor = conn.cursor()
-            cursor.execute("CREATE TABLE IF NOT EXISTS estoque (uuid TEXT, nm_produto TEXT, quantidade INTEGER, labels TEXT, anotation TEXT, cluster_id INTEGER, created_at TEXT, updated_at TEXT)")
+            cursor.execute("CREATE TABLE IF NOT EXISTS estoque (uuid TEXT, nm_produto TEXT, type_quantidade TEXT, val_quantidade REAL, labels TEXT, anotation TEXT, cluster_id INTEGER, created_at TEXT, updated_at TEXT)")
             cursor.execute("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, email TEXT, hash_password TEXT)")
             cursor.execute("INSERT OR IGNORE INTO users (id, email, hash_password) VALUES (1, 'loja@email.com', '123456')")
             cursor.execute("INSERT OR IGNORE INTO users (id, email, hash_password) VALUES (2, 'fabrica@email.com', '123456')")
             conn.commit()
             cursor.close()
             self.conn = conn
-            print(self.url)
 
     def _get_db_conn(self):
         self.__create_dev_tables()
-        print("URL: ", self.url)
         if self.url == None:
             logging.error("Database URL not set")
             sys.exit(1)
@@ -123,12 +123,10 @@ class DevDBManager(GenericDBManager):
             cursor.execute("SELECT * FROM estoque ORDER BY cluster_id ASC")
             rows = cursor.fetchall()
         except Exception as e:
-            print(e)
             raise HTTPException(status_code=500, detail="Internal server error")
         produtos = []
         for row in rows:
-            print(row)
-            produtos.append(ResProduto(id=row[0], nm_produto=row[1], quantidade=row[2], labels=json.loads(row[3]), anotation=row[4], cluster_id=row[5], created_at=row[6], updated_at=row[7]))
+            produtos.append(map_product_to_response(row))
         return produtos
 
     def get_produto(self, id, auth_token):
@@ -137,20 +135,18 @@ class DevDBManager(GenericDBManager):
         row = cursor.fetchone()
         if not row:
             raise HTTPException(status_code=404, detail="Produto not found")
-        return ResProduto(id=row[0], nm_produto=row[1], quantidade=row[2], labels=json.loads(row[3]), anotation=row[4], cluster_id=row[5], created_at=row[6], updated_at=row[7])
+        return map_product_to_response(row) 
 
     def add_estoque(self, produto, auth_token):
         uuid = str(uuid4())
         conn = self._get_db_conn()
-        print(produto)
         try:
             cursor = conn.cursor() 
             cursor.execute(
-                "INSERT INTO estoque (uuid, nm_produto, quantidade, labels, anotation, cluster_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))", 
-                (uuid, produto.nm_produto, produto.quantidade, json.dumps(produto.labels), produto.anotation, -1))
+                "INSERT INTO estoque (uuid, nm_produto, type_quantidade, val_quantidade, labels, anotation, cluster_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))", 
+                (uuid, produto.nm_produto, produto.type_quantidade, produto.val_quantidade, json.dumps(produto.labels), produto.anotation, -1))
             conn.commit()
         except Exception as e:
-            print(e)
             raise HTTPException(status_code=500, detail="Internal server error")
         produto = self.get_produto(uuid, auth_token)
         return produto
@@ -160,11 +156,10 @@ class DevDBManager(GenericDBManager):
         try:
             cursor = conn.cursor() 
             cursor.execute(
-                "UPDATE estoque SET nm_produto = ?, quantidade = ?, labels = ?, anotation = ?, updated_at = datetime('now') WHERE uuid = ?", 
-                (produto.nm_produto, produto.quantidade, json.dumps(produto.labels), produto.anotation, id))
+                "UPDATE estoque SET nm_produto = ?, type_quantidade = ?, val_quantidade = ?, labels = ?, anotation = ?, updated_at = datetime('now') WHERE uuid = ?", 
+                (produto.nm_produto, produto.type_quantidade, produto.val_quantidade, json.dumps(produto.labels), produto.anotation, id))
             conn.commit()
         except Exception as e:
-            print(e)
             raise HTTPException(status_code=404, detail="Produto not found")
         produto = self.get_produto(id, auth_token)
         return produto
@@ -187,7 +182,6 @@ class DevDBManager(GenericDBManager):
                 (cluster_id, id))
             conn.commit()
         except Exception as e:
-            print(e)
             raise HTTPException(status_code=404, detail="Produto not found")
 
     def get_estoque_size(self, auth_token) -> int:
@@ -223,8 +217,6 @@ class FirestoreDBManager(GenericDBManager):
         if response.status_code == 401:
             raise HTTPException(status_code=401, detail="Missing or invalid token")
         documents = response.json()["documents"]
-        print(response.json())
-        print(documents)
         estoque = []
         for document in documents:
             estoque.append(load_json_produto_into_obj(document))
@@ -240,12 +232,9 @@ class FirestoreDBManager(GenericDBManager):
         return list(categorias)
 
     def get_produto(self, id, auth_token):
-        print(id)
         headers = get_headers(auth_token)
         url = f"{self.firebase_db_url}{id}"
-        print(url)
         response = requests.get(url, headers=headers)
-        print(response.json())
         if response.status_code == 401:
             raise HTTPException(status_code=401, detail="Missing or invalid token")
         return load_json_produto_into_obj(response.json())
@@ -264,10 +253,8 @@ class FirestoreDBManager(GenericDBManager):
             }
         }
         response = requests.post(self.firebase_db_url, data=json.dumps(request_data), headers=headers)
-        print(response.json())
         if response.status_code == 401:
             raise HTTPException(status_code=401, detail="Missing or invalid token")
-        print(response.json())
         return load_json_produto_into_obj(response.json())
 
     def update_estoque(self, id, produto, auth_token):
@@ -283,7 +270,6 @@ class FirestoreDBManager(GenericDBManager):
         }
         url = f"{self.firebase_db_url}{id}"
         response = requests.patch(url, data=json.dumps(request_data), headers=headers)
-        print(response.json())
         if response.status_code == 401:
             raise HTTPException(status_code=401, detail="Missing or invalid token")
         return load_json_produto_into_obj(response.json())
@@ -297,7 +283,6 @@ class FirestoreDBManager(GenericDBManager):
         }
         url = f"{self.firebase_db_url}{id}"
         response = requests.patch(url, data=json.dumps(request_data), headers=headers)
-        print(response.json())
         if response.status_code == 401:
             raise HTTPException(status_code=401, detail="Missing or invalid token")
 

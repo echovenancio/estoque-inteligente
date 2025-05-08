@@ -12,14 +12,16 @@ class LoginRes(BaseModel):
 
 class Produto(BaseModel):
     nm_produto: str
-    quantidade: int
+    type_quantidade: str
+    val_quantidade: float
     labels: list[str]
     anotation: str
 
 class ResProduto(BaseModel):
     id: str
     nm_produto: str
-    quantidade: int
+    type_quantidade: str
+    val_quantidade: float
     labels: list[str]
     anotation: str
     cluster_id: int
