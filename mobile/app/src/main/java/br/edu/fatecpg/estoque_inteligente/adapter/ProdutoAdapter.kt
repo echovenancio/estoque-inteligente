@@ -19,8 +19,9 @@ class ProdutoAdapter(private var produtos: List<ResProduto>) : RecyclerView.Adap
     override fun onBindViewHolder(holder: ProdutoViewHolder, position: Int) {
         val produto = produtosFiltrados[position]
         holder.binding.nomeProduto.text = produto.nm_produto
-        holder.binding.qtdeProduto.text = produto.quantidade.toString()
-        holder.binding.categoriaProduto.text = produto.labels.joinToString(", ")
+        holder.binding.tipoQuantidade.text = produto.type_quantidade
+        holder.binding.valQuantidade.text = produto.val_quantidade.toString()
+        holder.binding.categoria.text = produto.labels[0]
     }
 
     override fun getItemCount(): Int = produtosFiltrados.size
