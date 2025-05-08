@@ -1,4 +1,3 @@
-import os
 import sys
 import logging
 import sqlite3
@@ -7,13 +6,10 @@ import json
 from uuid import uuid4
 from fastapi import HTTPException
 from abc import ABC, abstractmethod
-from dotenv import load_dotenv
 from mapper import map_product_to_response
+from config import settings
 
 from models import LoginRes, ResProduto
-
-load_dotenv()
-env = os.getenv('ENV')
 
 def load_json_produto_into_obj(json_produto):
     id = json_produto["name"].split("/")[-1]
@@ -78,7 +74,7 @@ class DevDBManager(GenericDBManager):
 
     def __create_dev_tables(self):
             conn = None
-            if env == "test":
+            if settings.env == "test":
                 self.url = "file::memory:?cache=shared"
                 conn = sqlite3.connect(self.url, uri=True)
             else:
@@ -196,8 +192,8 @@ class DevDBManager(GenericDBManager):
 
 class FirestoreDBManager(GenericDBManager):
     def __init__(self):
-        self.firebase_project_id = os.getenv("FIREBASE_PROJECT_ID")
-        self.firebase_api_key = os.getenv("FIREBASE_API_KEY")
+        self.firebase_project_id = settings.firebase_project_id("FIREBASE_PROJECT_ID")
+        self.firebase_api_key = settings.firebase_api_key("FIREBASE_API_KEY")
         self.firebase_auth_url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={self.firebase_api_key}"
         self.firebase_db_url = f"https://firestore.googleapis.com/v1/projects/{self.firebase_project_id}/databases/(default)/documents/estoque/"
 
@@ -296,9 +292,7 @@ class FirestoreDBManager(GenericDBManager):
 
 
 def get_db_manager() -> GenericDBManager:
-    from dotenv import load_dotenv
-    load_dotenv()
-    if env == 'dev' or env == 'test':
+    if settings.env == 'dev' or settings.env == 'test':
         return DevDBManager()
     else:
         return FirestoreDBManager()
