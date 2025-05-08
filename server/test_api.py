@@ -30,7 +30,6 @@ def test_login():
         "password": "123456", 
     } 
     response = client.post("/login", json=data)
-    print(response)
     assert response.status_code == 200
     assert response.json() == {
       "kind": "identitytoolkit#VerifyPasswordResponse",
@@ -47,21 +46,24 @@ def test_add_estoque():
     datas = [
         {
             "nm_produto": "Açucar",
-            "quantidade": 1,
+            "type_quantidade": "G",
+            "val_quantidade": 10,
             "labels": ["doce"],
             "anotation": "Açucar refinado"
         },
         {
             "nm_produto": "Arroz",
-            "quantidade": 2,
+            "type_quantidade": "KG",
+            "val_quantidade": 1,
             "labels": ["salgado", "doce"],
             "anotation": "Arroz branco"
         },
         {
-            "nm_produto": "Feijão",
-            "quantidade": 3,
-            "labels": ["salgado"],
-            "anotation": "Feijão carioca"
+            "nm_produto": "Bolo de chocolate",
+            "type_quantidade": "UN",
+            "val_quantidade": 1,
+            "labels": ["doce", "chocolate"],
+            "anotation": "Um bolo de chocolate"
         }
     ]
     for data in datas:
@@ -69,9 +71,10 @@ def test_add_estoque():
         assert response.status_code == 200
         json = response.json()
         assert json["nm_produto"] == data["nm_produto"]
-        assert json["quantidade"] == data["quantidade"]
         assert json["labels"] == data["labels"]
         assert json["anotation"] == data["anotation"]
+        assert json["type_quantidade"] == data["type_quantidade"]
+        assert json["val_quantidade"] == data["val_quantidade"]
         assert json["cluster_id"] == -1
         assert len(json["id"]) > 0 
         global test_id
@@ -82,22 +85,22 @@ def test_estoque():
     response = client.get("/estoque", headers=header)
     assert response.status_code == 200
     json = response.json()
-    print(json)
     assert len(json) == 3
 
 def test_update_estoque():
     data = {
         "nm_produto": "Bolo",
-        "quantidade": 3,
+        "type_quantidade": "UN",
+        "val_quantidade": 1,
         "labels": ["doce"],
-        "anotation": "Bolo de chocolate"
+        "anotation": "Bolo qualquer"
     }
-    print(test_id)
     response = client.put(f"/estoque/{test_id}", json=data, headers=header)
     assert response.status_code == 200
     json = response.json()
     assert json["nm_produto"] == data["nm_produto"]
-    assert json["quantidade"] == data["quantidade"]
+    assert json["type_quantidade"] == data["type_quantidade"]
+    assert json["val_quantidade"] == data["val_quantidade"]
     assert json["labels"] == data["labels"]
     assert json["anotation"] == data["anotation"]
 

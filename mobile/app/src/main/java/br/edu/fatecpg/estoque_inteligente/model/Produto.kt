@@ -5,7 +5,8 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class Produto(
     val nm_produto: String,
-    val quantidade: Int,
+    val type_quantidade: String,
+    val val_quantidade: Float,
     val labels: List<String>,
     val anotation: String,
 )

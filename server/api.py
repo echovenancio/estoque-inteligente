@@ -21,11 +21,7 @@ def update_cluster(auth_token: str):
     produtos = db.get_estoque(auth_token)
     updated_cluster_id = ml.fit_model(produtos, max(1, int(len(produtos) / 5)))
     for produto, cluster_id in zip(produtos, updated_cluster_id):
-        print(f"Produto: {produto.nm_produto}, Cluster ID: {cluster_id}")
         db.update_cluster(produto.id, int(cluster_id), auth_token)
-
-def map_produto(row) -> ResProduto:
-    return ResProduto(id=row[0], nm_produto=row[1], quantidade=row[2], labels=json.loads(row[3]), created_at=row[4], updated_at=row[5])
 
 def get_auth(token) -> str:
     if not token or not token.startswith("Bearer "):
@@ -68,9 +64,8 @@ def add_estoque(produto: Produto, token = Security(api_key_scheme)) -> ResProdut
 @app.put("/estoque/{id}")
 def update_estoque(produto: Produto, id: str, token = Security(api_key_scheme)) -> ResProduto:
     auth_token = get_auth(token)
-    print(produto)
     updated_produto = db.update_estoque(id, produto, auth_token)
-    background_job(update_estoque, token)
+    background_job(update_cluster, token)
     return updated_produto 
 
 @app.get("/")

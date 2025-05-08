@@ -7,45 +7,57 @@
     android:padding="8dp">
 
     <!-- Nome do Produto -->
-    <TextView
-        android:id="@+id/nome_produto"
-        android:layout_width="0dp"
+    <LinearLayout
+        android:id="@+id/headerLayout"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Nome"
-        android:textColor="@android:color/black"
-        android:textSize="16sp"
+        android:layout_marginTop="16dp"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/qtde_produto"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintHorizontal_chainStyle="spread" />
+        app:layout_constraintTop_toBottomOf="@+id/search">
+
+        <TextView
+            android:id="@+id/nome_produto"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:padding="8dp"
+            android:text="Nome"
+            android:textColor="@color/black"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tipo_quantidade"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:padding="8dp"
+            android:text="Tipo Qtde"
+            android:textColor="@color/black"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/val_quantidade"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Qtde"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/categoria"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:padding="8dp"
+            android:text="Categoria"
+            android:textColor="@color/black"
+            android:textStyle="bold" />
+    </LinearLayout>
 
     <!-- Quantidade -->
-    <TextView
-        android:id="@+id/qtde_produto"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="Qtde"
-        android:textColor="@android:color/black"
-        android:textSize="14sp"
-        android:gravity="center"
-        app:layout_constraintStart_toEndOf="@id/nome_produto"
-        app:layout_constraintEnd_toStartOf="@id/categoria_produto"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent" />
 
     <!-- Categoria -->
-    <TextView
-        android:id="@+id/categoria_produto"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="Categoria"
-        android:textColor="@android:color/black"
-        android:textSize="14sp"
-        android:gravity="center"
-        app:layout_constraintStart_toEndOf="@id/qtde_produto"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
