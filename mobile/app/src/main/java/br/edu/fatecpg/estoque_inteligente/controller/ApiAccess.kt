@@ -7,21 +7,14 @@ import br.edu.fatecpg.estoque_inteligente.model.Login
 import br.edu.fatecpg.estoque_inteligente.model.LoginRes
 import br.edu.fatecpg.estoque_inteligente.model.Produto
 import br.edu.fatecpg.estoque_inteligente.model.ResProduto
-import com.google.android.gms.common.api.Api.Client
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
-import okhttp3.Dispatcher
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
-import io.github.cdimascio.dotenv.Dotenv
-import java.io.File
-import java.net.URL
 
 class ApiAccess {
     private var api_url = ""
