@@ -13,52 +13,98 @@
         android:layout_height="wrap_content"
         android:layout_margin="30dp"
         app:cardCornerRadius="30dp"
-        app:cardElevation="20dp"
+        app:cardElevation="10dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:layout_editor_absoluteX="30dp">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="426dp"
+            android:layout_height="550dp"
             android:layout_gravity="center_horizontal"
             android:background="@color/white"
             android:orientation="vertical"
-            android:padding="24dp">
+            android:padding="28dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="110dp"
+                android:background="@color/white"
+                android:orientation="horizontal"
+                android:gravity="center">
+
+                <ImageView
+                    android:id="@+id/logoImage"
+                    android:layout_width="65dp"
+                    android:layout_height="65dp"
+                    android:contentDescription="Logotipo InStock"
+                    android:src="@drawable/in_stock_logo" />
+
+                <TextView
+                    android:id="@+id/logoText"
+                    android:layout_width="150dp"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/hanken_grotesk_light"
+                    android:text="@string/app_name"
+                    android:paddingLeft="10dp"
+                    android:textSize="40sp" />
+            </LinearLayout>
 
             <TextView
                 android:id="@+id/loginText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/poppins"
+                android:fontFamily="@font/hanken_grotesk_light"
                 android:text="Faça seu Login"
+                android:layout_marginTop="30dp"
+                android:textColor="@color/black"
                 android:textAlignment="center"
-                android:textColor="@color/blue"
-                android:textSize="36sp" />
+                android:textSize="32sp" />
 
-
-            <EditText
-                android:id="@+id/edtEmail"
+            <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:layout_marginTop="40dp"
-                android:background="@drawable/custom_edittext"
-                android:drawablePadding="8dp"
-                android:hint="Email"
-                android:padding="8dp"
-                android:textColor="@color/black" />
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                app:endIconTint="@color/blue"
+                app:boxBackgroundMode="outline"
+                app:boxCornerRadiusTopStart="20dp"
+                app:boxCornerRadiusTopEnd="20dp"
+                app:boxCornerRadiusBottomStart="20dp"
+                app:boxCornerRadiusBottomEnd="20dp">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/edtEmail"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/hanken_grotesk_light"
+                    android:hint="Email"
+                    android:inputType="textEmailAddress"
+                    android:padding="15dp"
+                    android:textColor="@color/black"
+                    android:drawablePadding="8dp"
+                    android:textColorHint="@color/blue" />
+            </com.google.android.material.textfield.TextInputLayout>
 
-            <EditText
-                android:id="@+id/edtSenha"
+            <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:layout_marginTop="20dp"
-                android:background="@drawable/custom_edittext"
-                android:drawablePadding="8dp"
-                android:hint="Senha"
-                android:inputType="textPassword"
-                android:padding="8dp"
-                android:textColor="@color/black" />
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                app:endIconMode="password_toggle"
+                app:endIconTint="@color/blue"
+                app:boxCornerRadiusTopStart="20dp"
+                app:boxCornerRadiusTopEnd="20dp"
+                app:boxCornerRadiusBottomStart="20dp"
+                app:boxCornerRadiusBottomEnd="20dp">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/edtSenha"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Senha"
+                    android:inputType="textPassword"
+                    android:padding="15dp"
+                    android:textColor="@color/black"
+                    android:drawablePadding="8dp"
+                    android:textColorHint="@color/blue" />
+            </com.google.android.material.textfield.TextInputLayout>
 
             <Button
                 android:id="@+id/btnLogin"
@@ -66,8 +112,9 @@
                 android:layout_height="60dp"
                 android:layout_marginTop="30dp"
                 android:backgroundTint="@color/blue"
-                android:text="Entrar"
                 android:textColor="@color/white"
+                android:fontFamily="@font/poppins"
+                android:text="Entrar"
                 android:textSize="18sp"
                 app:cornerRadius="20dp" />
 

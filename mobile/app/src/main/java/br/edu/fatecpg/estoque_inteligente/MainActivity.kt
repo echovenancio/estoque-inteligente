@@ -1,5 +1,6 @@
 package br.edu.fatecpg.estoque_inteligente
 
+import android.animation.AnimatorInflater
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -13,9 +14,7 @@ import br.edu.fatecpg.estoque_inteligente.databinding.ActivityMainBinding
 import br.edu.fatecpg.estoque_inteligente.model.Login
 import br.edu.fatecpg.estoque_inteligente.view.FabricaActivity
 import br.edu.fatecpg.estoque_inteligente.view.LojaActivity
-import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -27,6 +26,11 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         enableEdgeToEdge()
         setContentView(binding.root)
+
+        val logoImage = binding.logoImage
+        val animator = AnimatorInflater.loadAnimator(this, R.animator.rotate_logo)
+        animator.setTarget(logoImage)
+        animator.start()
 
         // Botão de Login
         binding.btnLogin.setOnClickListener {
