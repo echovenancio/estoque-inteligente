@@ -1,13 +1,9 @@
 from fastapi import FastAPI, Request, HTTPException, Security
-import json
 import ml
 import threading
-from fastapi.openapi.models import APIKey
-from fastapi.openapi.models import SecuritySchemeType
 from fastapi.security.api_key import APIKeyHeader
-from database import get_db_manager
-from pydantic import BaseModel
-from models import ResProduto, Produto, Login, LoginRes
+from database.manager_getter import get_db_manager
+from domain.models import ResProduto, Produto, Login, LoginRes
 
 app = FastAPI()
 db = get_db_manager()

@@ -1,4 +1,3 @@
-from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from api import app
 
@@ -23,7 +22,7 @@ def test_login():
     } 
     response = client.post("/login", json=data)
     assert response.status_code == 401
-    assert response.json() == {"detail": "Invalid email or password"}
+    assert response.json() == {"detail": "Email ou senha inválido"}
     # Teste email e senha corretos
     data = {
         "email": "loja@email.com",
@@ -46,7 +45,7 @@ def test_add_estoque():
     datas = [
         {
             "nm_produto": "Açucar",
-            "type_quantidade": "G",
+            "type_quantidade": "GR",
             "val_quantidade": 10,
             "labels": ["doce"],
             "anotation": "Açucar refinado"
