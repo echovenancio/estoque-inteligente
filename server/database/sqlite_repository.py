@@ -30,7 +30,6 @@ def map_product_to_response(row) -> ResProduto:
         updated_at = str(row[8])
     )
 
-
 class DevDBManager(GenericDBManager):
 
     def __init__(self):

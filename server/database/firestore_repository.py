@@ -1,6 +1,7 @@
 from config import settings
 from domain.exceptions import NotFound, InternalServer, Unauthorized
 from domain.models import LoginRes, ResProduto, Produto
+import json
 import requests
 from database.generic_repository import GenericDBManager
 
