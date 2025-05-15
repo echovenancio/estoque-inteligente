@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 class LoginRes(BaseModel):
     kind: str
@@ -11,11 +11,11 @@ class LoginRes(BaseModel):
     expiresIn: str
 
 class Produto(BaseModel):
-    nm_produto: str
-    type_quantidade: str
-    val_quantidade: float
-    labels: list[str]
-    anotation: str
+    nm_produto: str = Field(min_length=1, max_length=100, description="Nome do produto")
+    type_quantidade: str = Field(min_length=2, max_length=2, description="Tipo da quantidade, UN para uninade KG para kilograma, GR para pramas, LT para litros, ML para milimetros.")
+    val_quantidade: float = Field(default=0.0, description="Valor da quantidade do produto")
+    labels: list[str] = Field(default=[], description="Lista de categorias que descrevem o produto")
+    anotation: str = Field(default="", description="Descrição do produto")
 
 class ResProduto(BaseModel):
     id: str
@@ -29,5 +29,5 @@ class ResProduto(BaseModel):
     updated_at: str
 
 class Login(BaseModel):
-    email: str
-    password: str
+    email: str = Field(min_length=1, max_length=300, description="Email do usuário cadastrado no sistema")
+    password: str = Field(min_length=1, max_length=300, description="Senha do usuário cadastrado no sistema")

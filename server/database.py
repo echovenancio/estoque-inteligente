@@ -8,8 +8,9 @@ from fastapi import HTTPException
 from abc import ABC, abstractmethod
 from mapper import map_product_to_response
 from config import settings
+from exceptions import NotFound, InternalServer, Unauthorized
 
-from models import LoginRes, ResProduto
+from models import LoginRes, ResProduto, Produto
 
 def load_json_produto_into_obj(json_produto):
     id = json_produto["name"].split("/")[-1]
@@ -111,7 +112,7 @@ class DevDBManager(GenericDBManager):
                 refreshToken="fakerefreshtoken",
                 expiresIn="3600")
         else:
-            raise HTTPException(status_code=401, detail="Invalid email or password") 
+            raise InternalServer()
 
     def get_estoque(self, auth_token) -> list[ResProduto]:
         cursor = self._get_db_conn().cursor()
@@ -119,7 +120,7 @@ class DevDBManager(GenericDBManager):
             cursor.execute("SELECT * FROM estoque ORDER BY cluster_id ASC")
             rows = cursor.fetchall()
         except Exception as e:
-            raise HTTPException(status_code=500, detail="Internal server error")
+            raise InternalServer()
         produtos = []
         for row in rows:
             produtos.append(map_product_to_response(row))
@@ -130,7 +131,7 @@ class DevDBManager(GenericDBManager):
         cursor.execute("SELECT * FROM estoque WHERE uuid = ?", (id,))
         row = cursor.fetchone()
         if not row:
-            raise HTTPException(status_code=404, detail="Produto not found")
+            raise NotFound(Produto)
         return map_product_to_response(row) 
 
     def add_estoque(self, produto, auth_token):
@@ -143,7 +144,8 @@ class DevDBManager(GenericDBManager):
                 (uuid, produto.nm_produto, produto.type_quantidade, produto.val_quantidade, json.dumps(produto.labels), produto.anotation, -1))
             conn.commit()
         except Exception as e:
-            raise HTTPException(status_code=500, detail="Internal server error")
+            print(e)
+            raise InternalServer()
         produto = self.get_produto(uuid, auth_token)
         return produto
 
@@ -156,7 +158,7 @@ class DevDBManager(GenericDBManager):
                 (produto.nm_produto, produto.type_quantidade, produto.val_quantidade, json.dumps(produto.labels), produto.anotation, id))
             conn.commit()
         except Exception as e:
-            raise HTTPException(status_code=404, detail="Produto not found")
+            raise NotFound(Produto)
         produto = self.get_produto(id, auth_token)
         return produto
 
@@ -178,7 +180,7 @@ class DevDBManager(GenericDBManager):
                 (cluster_id, id))
             conn.commit()
         except Exception as e:
-            raise HTTPException(status_code=404, detail="Produto not found")
+            raise NotFound(Produto)
 
     def get_estoque_size(self, auth_token) -> int:
         cursor = self._get_db_conn().cursor()
@@ -187,7 +189,7 @@ class DevDBManager(GenericDBManager):
         if row:
             return row[0]
         else:
-            raise HTTPException(status_code=500, detail="Internal server error")
+            raise InternalServer()
 
 
 class FirestoreDBManager(GenericDBManager):
@@ -197,6 +199,15 @@ class FirestoreDBManager(GenericDBManager):
         self.firebase_auth_url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={self.firebase_api_key}"
         self.firebase_db_url = f"https://firestore.googleapis.com/v1/projects/{self.firebase_project_id}/databases/(default)/documents/estoque/"
 
+    def __raise_exception_if_there_iserror(code):
+        match (code):
+            case 401:
+                raise Unauthorized()
+            case 404:
+                raise NotFound(Produto)
+            case 500:
+                raise InternalServer()
+    
     def login(self, email, password):
             data = {
                 "email": email,
@@ -210,8 +221,7 @@ class FirestoreDBManager(GenericDBManager):
     def get_estoque(self, auth_token):
         headers = get_headers(auth_token)
         response = requests.get(f"self.firebase_db_url/orderBy=\"cluster_id\"", headers=headers)
-        if response.status_code == 401:
-            raise HTTPException(status_code=401, detail="Missing or invalid token")
+        self.__raise_exception_if_there_iserror(response.status_code)
         documents = response.json()["documents"]
         estoque = []
         for document in documents:
@@ -231,8 +241,7 @@ class FirestoreDBManager(GenericDBManager):
         headers = get_headers(auth_token)
         url = f"{self.firebase_db_url}{id}"
         response = requests.get(url, headers=headers)
-        if response.status_code == 401:
-            raise HTTPException(status_code=401, detail="Missing or invalid token")
+        self.__raise_exception_if_there_iserror(response.status_code)
         return load_json_produto_into_obj(response.json())
 
 
@@ -249,8 +258,7 @@ class FirestoreDBManager(GenericDBManager):
             }
         }
         response = requests.post(self.firebase_db_url, data=json.dumps(request_data), headers=headers)
-        if response.status_code == 401:
-            raise HTTPException(status_code=401, detail="Missing or invalid token")
+        self.__raise_exception_if_there_iserror(response.status_code)
         return load_json_produto_into_obj(response.json())
 
     def update_estoque(self, id, produto, auth_token):
@@ -266,8 +274,7 @@ class FirestoreDBManager(GenericDBManager):
         }
         url = f"{self.firebase_db_url}{id}"
         response = requests.patch(url, data=json.dumps(request_data), headers=headers)
-        if response.status_code == 401:
-            raise HTTPException(status_code=401, detail="Missing or invalid token")
+        self.__raise_exception_if_there_iserror(response.status_code)
         return load_json_produto_into_obj(response.json())
 
     def update_cluster(self, id, cluster_id, auth_token):
@@ -279,14 +286,12 @@ class FirestoreDBManager(GenericDBManager):
         }
         url = f"{self.firebase_db_url}{id}"
         response = requests.patch(url, data=json.dumps(request_data), headers=headers)
-        if response.status_code == 401:
-            raise HTTPException(status_code=401, detail="Missing or invalid token")
+        self.__raise_exception_if_there_iserror(response.status_code)
 
     def get_estoque_size(self, auth_token) -> int:
         headers = get_headers(auth_token)
         response = requests.get(self.firebase_db_url, headers=headers)
-        if response.status_code == 401:
-            raise HTTPException(status_code=401, detail="Missing or invalid token")
+        self.__raise_exception_if_there_iserror(response.status_code)
         documents = response.json()["documents"]
         return len(documents)
 
