@@ -4,6 +4,7 @@ import threading
 from fastapi.security.api_key import APIKeyHeader
 from database.manager_getter import get_db_manager
 from domain.models import ResProduto, Produto, Login, LoginRes
+from domain.exceptions import Unauthorized
 
 app = FastAPI()
 db = get_db_manager()
@@ -21,7 +22,7 @@ def update_cluster(auth_token: str):
 
 def get_auth(token) -> str:
     if not token or not token.startswith("Bearer "):
-        raise HTTPException(status_code=401, detail="Missing or invalid token")
+        raise Unauthorized()
     return token.split(" ")[1]
 
 api_key_scheme = APIKeyHeader(name="Authorization", auto_error=False)
