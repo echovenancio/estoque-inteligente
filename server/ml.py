@@ -3,8 +3,8 @@ import joblib
 import pandas as pd
 from sklearn.cluster import KMeans
 from sklearn.feature_extraction.text import TfidfVectorizer
-from database import get_db_manager
-from models import Produto, ResProduto
+from database.manager_getter import get_db_manager
+from domain.models import Produto, ResProduto
 
 # Initialize database manager
 db = get_db_manager()
@@ -14,14 +14,6 @@ stopwords_pt = ["de", "em", "a", "o", "para", "com", "e", "os", "as"]
 
 # Global variable for the model
 model: KMeans = None
-
-def save_model(model: KMeans, model_path: str = 'model.pkl'):
-    joblib.dump(model, model_path)
-
-def load_model(model_path: str = 'model.pkl') -> KMeans:
-    if os.path.exists(model_path):
-        return joblib.load(model_path)
-    return None
 
 def model_need_refit(estoque_size: int, model: KMeans) -> bool:
     if model is None:
@@ -52,7 +44,4 @@ def fit_model(lista_produtos: list[ResProduto], n_clusters: int) -> KMeans:
     X = vectorizer.fit_transform(docs)
     model = KMeans(n_clusters=n_clusters, random_state=42)
     model.fit(X)
-    save_model(model)
     return model.predict(X)
-
-model = load_model()
