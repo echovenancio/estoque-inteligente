@@ -7,6 +7,7 @@
 
     <style name="Theme.Estoqueinteligente" parent="Base.Theme.Estoqueinteligente" />
 
+
     <style name="CustomTextInputStyle" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
         <item name="boxStrokeWidth">2dp</item>
         <item name="boxStrokeWidthFocused">3dp</item>

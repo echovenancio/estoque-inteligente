@@ -1,6 +1,8 @@
 <resources>
     <string name="app_name">InStock</string>
     <string name="logo_text">In<font color='#145da0'>Stock</font></string>
+    <string name="sublinhado"><u>Sair</u></string>
+
 
 
 </resources>
