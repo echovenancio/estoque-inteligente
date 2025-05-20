@@ -35,18 +35,19 @@
 
                 <ImageView
                     android:id="@+id/logoImage"
-                    android:layout_width="65dp"
-                    android:layout_height="65dp"
+                    android:layout_width="73dp"
+                    android:layout_height="81dp"
                     android:contentDescription="Logotipo InStock"
-                    android:src="@drawable/in_stock_logo" />
+                    android:src="@drawable/instocklogo" />
 
                 <TextView
                     android:id="@+id/logoText"
                     android:layout_width="150dp"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/hanken_grotesk_light"
-                    android:text="@string/app_name"
+                    android:textStyle="bold"
                     android:paddingLeft="10dp"
+                    android:text="@string/logo_text"
                     android:textSize="40sp" />
             </LinearLayout>
 
@@ -54,37 +55,41 @@
                 android:id="@+id/loginText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/hanken_grotesk_light"
-                android:text="Faça seu Login"
-                android:layout_marginTop="30dp"
+                android:fontFamily="@font/poppins"
+                android:text="Login"
+
+                android:layout_marginTop="25dp"
                 android:textColor="@color/black"
                 android:textAlignment="center"
                 android:textSize="32sp" />
 
             <com.google.android.material.textfield.TextInputLayout
+                style="@style/CustomTextInputStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                app:endIconTint="@color/blue"
+                android:layout_marginTop="17dp"
                 app:boxBackgroundMode="outline"
                 app:boxCornerRadiusTopStart="20dp"
                 app:boxCornerRadiusTopEnd="20dp"
                 app:boxCornerRadiusBottomStart="20dp"
                 app:boxCornerRadiusBottomEnd="20dp">
+
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/edtEmail"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:fontFamily="@font/hanken_grotesk_light"
+
+                    android:drawablePadding="8dp"
                     android:hint="Email"
                     android:inputType="textEmailAddress"
                     android:padding="15dp"
                     android:textColor="@color/black"
-                    android:drawablePadding="8dp"
-                    android:textColorHint="@color/blue" />
+                    android:textColorHint="@color/blue"
+                    android:textSize="17sp" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
+                style="@style/CustomTextInputStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
@@ -94,16 +99,19 @@
                 app:boxCornerRadiusTopEnd="20dp"
                 app:boxCornerRadiusBottomStart="20dp"
                 app:boxCornerRadiusBottomEnd="20dp">
+
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/edtSenha"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+
+                    android:drawablePadding="8dp"
                     android:hint="Senha"
                     android:inputType="textPassword"
                     android:padding="15dp"
                     android:textColor="@color/black"
-                    android:drawablePadding="8dp"
-                    android:textColorHint="@color/blue" />
+                    android:textColorHint="@color/blue"
+                    android:textSize="17sp" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <Button
@@ -112,10 +120,10 @@
                 android:layout_height="60dp"
                 android:layout_marginTop="30dp"
                 android:backgroundTint="@color/blue"
-                android:textColor="@color/white"
                 android:fontFamily="@font/poppins"
                 android:text="Entrar"
-                android:textSize="18sp"
+                android:textColor="@color/white"
+                android:textSize="21dp"
                 app:cornerRadius="20dp" />
 
         </LinearLayout>

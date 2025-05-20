@@ -11,11 +11,12 @@
         android:id="@+id/headerLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="50dp"
         android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/search">
+        app:layout_constraintTop_toTopOf="parent">
 
         <TextView
             android:id="@+id/nome_produto"
@@ -25,7 +26,8 @@
             android:padding="8dp"
             android:text="Nome"
             android:textColor="@color/black"
-            android:textStyle="bold" />
+            android:fontFamily="@font/poppins"
+             />
 
         <TextView
             android:id="@+id/tipo_quantidade"
@@ -33,17 +35,10 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:padding="8dp"
-            android:text="Tipo Qtde"
+            android:text="Quantidade"
+            android:fontFamily="@font/poppins"
             android:textColor="@color/black"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/val_quantidade"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Qtde"
-            android:textStyle="bold" />
+             />
 
         <TextView
             android:id="@+id/categoria"
@@ -51,9 +46,10 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:padding="8dp"
-            android:text="Categoria"
+            android:text="Sabor"
+            android:fontFamily="@font/poppins"
             android:textColor="@color/black"
-            android:textStyle="bold" />
+             />
     </LinearLayout>
 
     <!-- Quantidade -->
