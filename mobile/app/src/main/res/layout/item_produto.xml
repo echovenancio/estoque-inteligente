@@ -11,7 +11,6 @@
         android:id="@+id/headerLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="50dp"
         android:orientation="horizontal"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -19,37 +18,34 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <TextView
+            android:id="@+id/val_quantidade"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:fontFamily="@font/poppins"
+            android:padding="8dp"
+            android:text="Quantidade"
+            android:textColor="@color/black" />
+
+        <TextView
             android:id="@+id/nome_produto"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:fontFamily="@font/poppins"
             android:padding="8dp"
             android:text="Nome"
-            android:textColor="@color/black"
-            android:fontFamily="@font/poppins"
-             />
-
-        <TextView
-            android:id="@+id/tipo_quantidade"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:padding="8dp"
-            android:text="Quantidade"
-            android:fontFamily="@font/poppins"
-            android:textColor="@color/black"
-             />
+            android:textColor="@color/black" />
 
         <TextView
             android:id="@+id/categoria"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:fontFamily="@font/poppins"
             android:padding="8dp"
             android:text="Sabor"
-            android:fontFamily="@font/poppins"
-            android:textColor="@color/black"
-             />
+            android:textColor="@color/black" />
     </LinearLayout>
 
     <!-- Quantidade -->
