@@ -10,5 +10,6 @@
     <color name="bg">#F4ECEC</color>
     <color name="borda">#848383</color>
     <color name="red">#bd1010</color>
+    <color name="orange">#ed902f</color>
 
 </resources>
