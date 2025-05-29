@@ -32,9 +32,9 @@
         android:layout_marginEnd="24dp"
         android:gravity="center"
         android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent">
-
 
         <ImageView
             android:id="@+id/logoImage"
@@ -52,8 +52,6 @@
             android:text="@string/logo_text"
             android:textSize="30sp"
             android:textStyle="bold" />
-
-
     </LinearLayout>
 
     <TextView
