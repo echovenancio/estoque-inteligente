@@ -26,11 +26,11 @@ class LojaActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         // Botão Voltar para MainActivity
-        binding.btnVoltar.setOnClickListener {
-            val intent = Intent(this, MainActivity::class.java)
-            startActivity(intent)
-            finish()
-        }
+//        binding.btnVoltar.setOnClickListener {
+//            val intent = Intent(this, MainActivity::class.java)
+//            startActivity(intent)
+//            finish()
+//        }
 
         // Configura RecyclerView
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
@@ -40,16 +40,16 @@ class LojaActivity : AppCompatActivity() {
         // Carregar dados dos produtos
         carregarProdutos()
 
-        binding.search.setOnQueryTextListener(object : androidx.appcompat.widget.SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(query: String?): Boolean {
-                return false
-            }
-
-            override fun onQueryTextChange(newText: String?): Boolean {
-                newText?.let { produtoAdapter.filtrar(it) }
-                return true
-            }
-        })
+//        binding.search.setOnQueryTextListener(object : androidx.appcompat.widget.SearchView.OnQueryTextListener {
+//            override fun onQueryTextSubmit(query: String?): Boolean {
+//                return false
+//            }
+//
+//            override fun onQueryTextChange(newText: String?): Boolean {
+//                newText?.let { produtoAdapter.filtrar(it) }
+//                return true
+//            }
+//        })
 
     }
 
