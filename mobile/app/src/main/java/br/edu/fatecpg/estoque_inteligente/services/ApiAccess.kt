@@ -3,10 +3,12 @@ package br.edu.fatecpg.estoque_inteligente.services
 import android.util.Log
 import br.edu.fatecpg.estoque_inteligente.BuildConfig
 import br.edu.fatecpg.estoque_inteligente.dao.CredDao
+import br.edu.fatecpg.estoque_inteligente.exceptions.ApiError
 import br.edu.fatecpg.estoque_inteligente.model.Login
 import br.edu.fatecpg.estoque_inteligente.model.LoginRes
 import br.edu.fatecpg.estoque_inteligente.model.Produto
 import br.edu.fatecpg.estoque_inteligente.model.ResProduto
+import br.edu.fatecpg.estoque_inteligente.model.ValidationError
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
@@ -29,12 +31,21 @@ class ApiAccess {
         return withContext(Dispatchers.IO) {
             val response = client.newCall(request).execute()
             if (!response.isSuccessful) {
-                Log.e("api erro", response.toString())
-                throw Exception("Erro na api")
+                val body = response.body?.string()
+                if (!body.isNullOrBlank()) {
+                    try {
+                        val err = Json.decodeFromString<ValidationError>(body)
+                        throw ApiError.Validation(err.detail)
+                    } catch (_: Exception) {
+                        throw ApiError.Http(response.code, body)
+                    }
                 }
+                throw ApiError.Unknown
+            }
             response
         }
     }
+
 
     suspend fun login(login: Login): LoginRes {
         val json = Json.encodeToString(login)
