@@ -1,5 +1,5 @@
 from fastapi.testclient import TestClient
-from api import app
+from main import app
 
 client = TestClient(app)
 
@@ -9,18 +9,13 @@ header = {
     "Authorization": "Bearer faketoken"
 }
 
-def test_root():
-    response = client.get("/")
-    assert response.status_code == 200
-    assert response.json() == {"Hello": "World"}
-
 def test_login():
     # Teste email e senha incorretos
     data = {
         "email": "email@errado",
         "password": "12345678", 
     } 
-    response = client.post("/login", json=data)
+    response = client.post("/v1/login", json=data)
     assert response.status_code == 401
     assert response.json() == {"detail": "Email ou senha inválido"}
     # Teste email e senha corretos
@@ -28,7 +23,7 @@ def test_login():
         "email": "loja@email.com",
         "password": "123456", 
     } 
-    response = client.post("/login", json=data)
+    response = client.post("/v1/login", json=data)
     assert response.status_code == 200
     assert response.json() == {
       "kind": "identitytoolkit#VerifyPasswordResponse",
@@ -66,7 +61,7 @@ def test_add_estoque():
         }
     ]
     for data in datas:
-        response = client.post("/estoque", json=data, headers=header)
+        response = client.post("/v1/estoque", json=data, headers=header)
         assert response.status_code == 200
         json = response.json()
         assert json["nm_produto"] == data["nm_produto"]
@@ -81,7 +76,7 @@ def test_add_estoque():
     assert test_id != ""
 
 def test_estoque():
-    response = client.get("/estoque", headers=header)
+    response = client.get("/v1/estoque", headers=header)
     assert response.status_code == 200
     json = response.json()
     assert len(json) == 3
@@ -94,7 +89,7 @@ def test_update_estoque():
         "labels": ["doce"],
         "anotation": "Bolo qualquer"
     }
-    response = client.put(f"/estoque/{test_id}", json=data, headers=header)
+    response = client.put(f"/v1/estoque/{test_id}", json=data, headers=header)
     assert response.status_code == 200
     json = response.json()
     assert json["nm_produto"] == data["nm_produto"]
@@ -104,7 +99,15 @@ def test_update_estoque():
     assert json["anotation"] == data["anotation"]
 
 def test_get_produto():
-    response = client.get(f"/estoque/{test_id}", headers=header)
+    response = client.get(f"/v1/estoque/{test_id}", headers=header)
     assert response.status_code == 200
     json = response.json()
     assert json["id"] == test_id
+
+def test_get_categoria():
+    response = client.get("/v1/categorias", headers=header)
+    assert response.status_code == 200
+    json = response.json()
+    assert len(json) > 0
+    assert "doce" in json
+    assert "salgado" in json
