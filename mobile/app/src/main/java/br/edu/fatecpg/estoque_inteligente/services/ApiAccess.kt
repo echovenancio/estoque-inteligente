@@ -18,6 +18,7 @@ import okhttp3.Response
 
 class ApiAccess {
     private var api_url = ""
+    private var base = "v1"
     private val json_media_type = "application/json; charset=utf-8".toMediaType()
 
     init {
@@ -40,7 +41,7 @@ class ApiAccess {
         val requestBody = json.toRequestBody(json_media_type)
         val client = OkHttpClient()
         val request = Request.Builder()
-            .url("${api_url}/login")
+            .url("${api_url}/${base}/login")
             .post(requestBody)
             .build()
         val response = makeReq(client, request)
@@ -55,7 +56,7 @@ class ApiAccess {
         val client = OkHttpClient()
         val token = CredDao().getToken()
         val request = Request.Builder()
-            .url("${api_url}/estoque")
+            .url("${api_url}/${base}/estoque")
             .header("Authorization", "Bearer ${token}")
             .get()
             .build()
@@ -69,7 +70,7 @@ class ApiAccess {
         val client = OkHttpClient()
         val token = CredDao().getToken()
         val request = Request.Builder()
-            .url("${api_url}/categorias")
+            .url("${api_url}/${base}/categorias")
             .header("Authorization", "Bearer ${token}")
             .get()
             .build()
@@ -83,7 +84,7 @@ class ApiAccess {
         val client = OkHttpClient()
         val token = CredDao().getToken()
         val request = Request.Builder()
-            .url("${api_url}/estoque/${id}")
+            .url("${api_url}/${base}/estoque/${id}")
             .header("Authorization", "Bearer ${token}")
             .get()
             .build()
@@ -99,7 +100,7 @@ class ApiAccess {
         val token = CredDao().getToken() 
         val client = OkHttpClient()
         val request = Request.Builder()
-            .url("${api_url}/estoque")
+            .url("${api_url}/${base}/estoque")
             .header("Authorization", "Bearer ${token}")
             .post(requestBody)
             .build()
@@ -115,7 +116,7 @@ class ApiAccess {
         val token = CredDao().getToken()
         val client = OkHttpClient()
         val request = Request.Builder()
-            .url("${api_url}/estoque/${id}")
+            .url("${api_url}/${base}/estoque/${id}")
             .header("Authorization", "Bearer ${token}")
             .put(requestBody)
             .build()
