@@ -11,7 +11,9 @@ import androidx.lifecycle.lifecycleScope
 import br.edu.fatecpg.estoque_inteligente.services.ApiAccess
 import br.edu.fatecpg.estoque_inteligente.dao.CredDao
 import br.edu.fatecpg.estoque_inteligente.databinding.ActivityMainBinding
+import br.edu.fatecpg.estoque_inteligente.exceptions.ApiError
 import br.edu.fatecpg.estoque_inteligente.model.Login
+import br.edu.fatecpg.estoque_inteligente.model.LoginRes
 import br.edu.fatecpg.estoque_inteligente.view.FabricaActivity
 import br.edu.fatecpg.estoque_inteligente.view.LojaActivity
 import kotlinx.coroutines.Dispatchers
@@ -46,21 +48,36 @@ class MainActivity : AppCompatActivity() {
             val api = ApiAccess()
             val login = Login(email, senha)
             lifecycleScope.launch(Dispatchers.IO) {
-                val res = api.login(login)
-                val credDao = CredDao()
-                credDao.setToken(res.idToken)
+                val res: LoginRes = try {
+                    api.login(login)
+                } catch (e: ApiError.Validation) {
+                    e.errors.forEach { println(it.msg) }
+                    return@launch
+                } catch (e: ApiError.Http) {
+                    println("http error ${e.code}: ${e.body}")
+                    return@launch
+                } catch (e: ApiError) {
+                    println("some api err")
+                    return@launch
+                }
+
+                CredDao().setToken(res.idToken)
                 Log.i("login", res.toString())
 
                 withContext(Dispatchers.Main) {
-                    if (res.email.equals("loja@email.com")) {
-                        startActivity(Intent(this@MainActivity, LojaActivity::class.java))
-                        finish()
-                    } else if (res.email.equals("fabrica@email.com")) {
-                        startActivity(Intent(this@MainActivity, FabricaActivity::class.java))
-                        finish()
+                    when (res.email) {
+                        "loja@email.com" -> {
+                            startActivity(Intent(this@MainActivity, LojaActivity::class.java))
+                            finish()
+                        }
+                        "fabrica@email.com" -> {
+                            startActivity(Intent(this@MainActivity, FabricaActivity::class.java))
+                            finish()
+                        }
                     }
                 }
             }
+
         }
     }
 }
