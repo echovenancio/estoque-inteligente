@@ -8,7 +8,7 @@ import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import br.edu.fatecpg.estoque_inteligente.controller.ApiAccess
+import br.edu.fatecpg.estoque_inteligente.services.ApiAccess
 import br.edu.fatecpg.estoque_inteligente.dao.CredDao
 import br.edu.fatecpg.estoque_inteligente.databinding.ActivityMainBinding
 import br.edu.fatecpg.estoque_inteligente.model.Login

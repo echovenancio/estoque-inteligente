@@ -1,4 +1,4 @@
-package br.edu.fatecpg.estoque_inteligente.controller
+package br.edu.fatecpg.estoque_inteligente.services
 
 import android.util.Log
 import br.edu.fatecpg.estoque_inteligente.BuildConfig
