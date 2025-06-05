@@ -122,7 +122,6 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="196dp"
         android:layout_marginEnd="36dp"
-        android:background="none"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/categoria"
         app:srcCompat="@drawable/editardark"
