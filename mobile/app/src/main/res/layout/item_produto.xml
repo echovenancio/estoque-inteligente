@@ -21,6 +21,7 @@
         android:textSize="21dp"
         app:layout_constraintEnd_toStartOf="@+id/linearLayout"
         app:layout_constraintHorizontal_bias="0.568"
+<<<<<<< HEAD
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -204,8 +205,6 @@
 
         </FrameLayout>
     </LinearLayout>
-
-
 
     <!-- Quantidade -->
 

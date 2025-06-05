@@ -1,15 +1,13 @@
 package br.edu.fatecpg.estoque_inteligente.view
 
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import br.edu.fatecpg.estoque_inteligente.MainActivity
 import br.edu.fatecpg.estoque_inteligente.adapter.ProdutoAdapter
-import br.edu.fatecpg.estoque_inteligente.controller.ApiAccess
+import br.edu.fatecpg.estoque_inteligente.services.ApiAccess
 import br.edu.fatecpg.estoque_inteligente.databinding.ActivityLojaBinding
 import br.edu.fatecpg.estoque_inteligente.model.ResProduto
 import kotlinx.coroutines.Dispatchers
