@@ -52,15 +52,9 @@ pip install -r requirements.txt
 
 ## Rodando o servidor
 
-Para rodar o servidor, execute o comando:
-
-```
-fastapi dev api.py
-```
-
 Para rodar o servidor de uma forma em que os outros dispositivos na rede consigam acesser, você dever setar o host
 da seguinte forma:
 
 ```
-fastapi dev --host 0.0.0.0 api.py
+fastapi dev --host 0.0.0.0 main.py
 ```

@@ -5,11 +5,13 @@
     <color name="white">#FFFFFFFF</color>
     <color name="purple">#8692f7</color>
     <color name="blue">#116DC7</color>
+    <color name="bluepastel">#8abcff</color>
     <color name="twoblue">#145da0</color>
     <color name="Lightblue">#558abb</color>
     <color name="bg">#F4ECEC</color>
     <color name="borda">#848383</color>
     <color name="red">#bd1010</color>
     <color name="orange">#ed902f</color>
+    <color name="lightgrey">#f1f1f1</color>
 
 </resources>
