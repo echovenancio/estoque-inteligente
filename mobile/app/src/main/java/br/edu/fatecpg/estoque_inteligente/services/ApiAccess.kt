@@ -51,8 +51,9 @@ class ApiAccess {
         val json = Json.encodeToString(login)
         val requestBody = json.toRequestBody(json_media_type)
         val client = OkHttpClient()
+        var url_rq = "${api_url}/${base}/login"
         val request = Request.Builder()
-            .url("${api_url}/${base}/login")
+            .url(url_rq)
             .post(requestBody)
             .build()
         val response = makeReq(client, request)
@@ -66,8 +67,9 @@ class ApiAccess {
     suspend fun get_estoque(): List<ResProduto> {
         val client = OkHttpClient()
         val token = CredDao().getToken()
+        var url_rq = "${api_url}/${base}/estoque"
         val request = Request.Builder()
-            .url("${api_url}/${base}/estoque")
+            .url(url_rq)
             .header("Authorization", "Bearer ${token}")
             .get()
             .build()
@@ -80,8 +82,9 @@ class ApiAccess {
     suspend fun get_categorias(): List<String> {
         val client = OkHttpClient()
         val token = CredDao().getToken()
+        var url_rq = "${api_url}/${base}/categorias"
         val request = Request.Builder()
-            .url("${api_url}/${base}/categorias")
+            .url(url_rq)
             .header("Authorization", "Bearer ${token}")
             .get()
             .build()
@@ -94,8 +97,9 @@ class ApiAccess {
     suspend fun get_produto(id: String): ResProduto {
         val client = OkHttpClient()
         val token = CredDao().getToken()
+        var url_rq = "${api_url}/${base}/estoque/${id}"
         val request = Request.Builder()
-            .url("${api_url}/${base}/estoque/${id}")
+            .url(url_rq)
             .header("Authorization", "Bearer ${token}")
             .get()
             .build()
@@ -110,8 +114,9 @@ class ApiAccess {
         val requestBody = json.toRequestBody(json_media_type)
         val token = CredDao().getToken() 
         val client = OkHttpClient()
+        var url_rq = "${api_url}/${base}/estoque"
         val request = Request.Builder()
-            .url("${api_url}/${base}/estoque")
+            .url(url_rq)
             .header("Authorization", "Bearer ${token}")
             .post(requestBody)
             .build()
@@ -126,8 +131,9 @@ class ApiAccess {
         val requestBody = json.toRequestBody(json_media_type)
         val token = CredDao().getToken()
         val client = OkHttpClient()
+        var url_rq = "${api_url}/${base}/estoque/${id}"
         val request = Request.Builder()
-            .url("${api_url}/${base}/estoque/${id}")
+            .url(url_rq)
             .header("Authorization", "Bearer ${token}")
             .put(requestBody)
             .build()
