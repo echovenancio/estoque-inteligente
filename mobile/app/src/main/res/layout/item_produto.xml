@@ -1,212 +1,62 @@
-<?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="8dp">
+    android:padding="12dp">
 
-    <!-- Nome do Produto -->
-
-
-    <Button
-        android:id="@+id/btn_voltar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="32dp"
-        android:layout_weight="1"
-        android:backgroundTint="@color/orange"
-        android:text="@string/sublinhadovoltar"
-        android:textSize="21dp"
-        app:layout_constraintEnd_toStartOf="@+id/linearLayout"
-        app:layout_constraintHorizontal_bias="0.568"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <LinearLayout
-        android:id="@+id/linearLayout"
-        android:layout_width="219dp"
-        android:layout_height="66dp"
-        android:layout_marginTop="24dp"
-        android:layout_marginEnd="24dp"
-        android:gravity="center"
-        android:orientation="horizontal"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-
-        <ImageView
-            android:id="@+id/logoImage"
-            android:layout_width="75dp"
-            android:layout_height="66dp"
-            android:contentDescription="Logotipo InStock"
-            android:src="@drawable/instocklogo" />
-
-        <TextView
-            android:id="@+id/logoText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:fontFamily="@font/hanken_grotesk_light"
-            android:paddingLeft="0dp"
-            android:text="@string/logo_text"
-            android:textSize="30sp"
-            android:textStyle="bold" />
-
-
-    </LinearLayout>
-
-
+    <!-- Nome do produto -->
     <TextView
         android:id="@+id/nome_produto"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="38dp"
-        android:layout_weight="1"
-        android:fontFamily="@font/poppins"
-        android:padding="8dp"
-        android:text="@string/sublinhadonome"
+        android:text="Produto"
+        android:textSize="15sp"
+        android:textStyle="bold"
         android:textColor="@color/black"
-        android:textSize="22dp"
-        android:textStyle="bold
-"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
-
-
-    <LinearLayout
-        android:id="@+id/linear"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/nome_produto">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Quantidade :"
-            android:fontFamily="@font/poppins"
-            android:textColor="@color/black"
-            android:textSize="19dp"/>
-
-        <TextView
-            android:id="@+id/val_quantidade"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="0dp"
-            android:layout_weight="1"
-            android:fontFamily="@font/poppins"
-            android:padding="8dp"
-            android:text="lorem ipsum"
-            android:textColor="@color/black"
-            android:textSize="19dp"
-            app:layout_constraintTop_toBottomOf="@+id/nome_produto"
-            tools:layout_editor_absoluteX="8dp" />
-    </LinearLayout>
-
-    <TextView
-        android:id="@+id/txtanotacao"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="28dp"
-        android:layout_weight="1"
-        android:fontFamily="@font/poppins"
-        android:padding="8dp"
-        android:text="Anotações :"
-        android:textColor="@color/black"
-        android:textSize="19dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.125"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linear" />
-
-
-
-    <FrameLayout
-
-        android:id="@+id/frameLayout1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="@drawable/shapeanotacoes"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/txtanotacao">
-
-        <TextView
-            android:id="@+id/anotacao"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginLeft="11dp"
-            android:layout_marginTop="11dp"
-            android:text="lorem ipsum"
-            android:textSize="18dp" />
-    </FrameLayout>
-
-    <TextView
-        android:id="@+id/txtcategoria"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="28dp"
-        android:layout_weight="1"
-        android:fontFamily="@font/poppins"
-        android:padding="8dp"
-        android:text="Sabor"
-        android:textColor="@color/black"
-        android:textSize="19dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.109"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/frameLayout1" />
-
-
-    <ImageButton
-        android:id="@+id/btn_editar"
-        android:layout_width="76dp"
-        android:layout_height="76dp"
-        android:layout_marginTop="540dp"
-        android:layout_marginEnd="18dp"
-        android:background="#00000000"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout"
-        app:srcCompat="@drawable/editardark"
-        tools:ignore="SpeakableTextPresentCheck" />
-
-
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="25dp"
-        android:paddingLeft="15dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/txtcategoria">
-
-        <FrameLayout
-            android:id="@+id/frameLayout2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/tagsabor"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.116"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/categoria">
-
-            <TextView
-                android:id="@+id/categoria"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:text="Doce"
-                android:textColor="@color/black"
-                android:textSize="17dp"
-                android:textStyle="bold" />
-
-        </FrameLayout>
-    </LinearLayout>
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/val_quantidade"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        app:layout_constraintHorizontal_weight="1" />
 
     <!-- Quantidade -->
+    <TextView
+        android:id="@+id/val_quantidade"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="10.0"
+        android:textSize="14sp"
+        android:textColor="@color/black"
+        android:gravity="center"
+        app:layout_constraintTop_toTopOf="@id/nome_produto"
+        app:layout_constraintBottom_toBottomOf="@id/nome_produto"
+        app:layout_constraintStart_toEndOf="@id/nome_produto"
+        app:layout_constraintEnd_toStartOf="@id/frame_categoria"
+        app:layout_constraintHorizontal_weight="1" />
 
-    <!-- Categoria -->
+    <!-- Frame da Categoria -->
+    <FrameLayout
+        android:id="@+id/frame_categoria"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/tagsabor"
+        app:layout_constraintTop_toTopOf="@id/nome_produto"
+        app:layout_constraintBottom_toBottomOf="@id/nome_produto"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginEnd="8dp">
 
+        <TextView
+            android:id="@+id/categoria"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="12dp"
+            android:paddingVertical="4dp"
+            android:text="Doce"
+            android:textColor="@color/black"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+    </FrameLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,15 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-
-
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:padding="8dp">
-
-
 
     <!-- Nome do Produto -->
 
@@ -23,9 +19,7 @@
         android:orientation="horizontal"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
-
-
-
+        
         <ImageView
             android:id="@+id/logoImage"
             android:layout_width="75dp"
@@ -85,21 +79,16 @@
         android:layout_marginTop="20dp"
         android:fontFamily="@font/poppins"
         android:gravity="center"
-        android:text="Clique em um produto para vizualizar"
+        android:text="Clique em um produto para visualizar"
         android:textColor="#545454"
         android:textSize="18dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textInputLayout" />
 
-
-
-        <!--ERROS: Não consegui mudar a cor da borda para color twoblue-->
-
-
+    <!--ERROS: Não consegui mudar a cor da borda para color twoblue-->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/textInputLayout"
-
         style="@style/CustomTextInputStyle"
         android:layout_width="290dp"
         android:layout_height="50dp"
@@ -123,16 +112,14 @@
         app:layout_constraintTop_toBottomOf="@+id/txv_bemvindo">
 
         <com.google.android.material.textfield.TextInputEditText
-
             android:id="@+id/search"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:drawablePadding="8dp"
             android:hint="Procurar produto"
             android:padding="15dp"
-
             android:textSize="18sp" />
-    </com.google.android.material.textfield.TextInputLayout>
+        </com.google.android.material.textfield.TextInputLayout>
 
     <LinearLayout
         android:id="@+id/headerLayout"

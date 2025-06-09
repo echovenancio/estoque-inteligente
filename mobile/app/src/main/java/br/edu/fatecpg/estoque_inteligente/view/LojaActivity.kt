@@ -1,11 +1,17 @@
 package br.edu.fatecpg.estoque_inteligente.view
 
+import android.animation.AnimatorInflater
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.SearchView
+import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import br.edu.fatecpg.estoque_inteligente.MainActivity
+import br.edu.fatecpg.estoque_inteligente.R
 import br.edu.fatecpg.estoque_inteligente.adapter.ProdutoAdapter
 import br.edu.fatecpg.estoque_inteligente.services.ApiAccess
 import br.edu.fatecpg.estoque_inteligente.databinding.ActivityLojaBinding
@@ -23,12 +29,25 @@ class LojaActivity : AppCompatActivity() {
         binding = ActivityLojaBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Botão Voltar para MainActivity
+        // Animação Logo girante
+        val logoImage = binding.logoImage
+        val animator = AnimatorInflater.loadAnimator(this, R.animator.rotate_logo)
+        animator.setTarget(logoImage)
+        animator.start()
+
+//         Botão Voltar para MainActivity
 //        binding.btnVoltar.setOnClickListener {
 //            val intent = Intent(this, MainActivity::class.java)
 //            startActivity(intent)
 //            finish()
 //        }
+
+        binding.btnAddsabor.setOnClickListener {
+            val intent = Intent(this, AddProdutos::class.java)
+            startActivity(intent)
+            finish()
+        }
+
 
         // Configura RecyclerView
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
@@ -37,18 +56,11 @@ class LojaActivity : AppCompatActivity() {
 
         // Carregar dados dos produtos
         carregarProdutos()
-
-//        binding.search.setOnQueryTextListener(object : androidx.appcompat.widget.SearchView.OnQueryTextListener {
-//            override fun onQueryTextSubmit(query: String?): Boolean {
-//                return false
-//            }
 //
-//            override fun onQueryTextChange(newText: String?): Boolean {
-//                newText?.let { produtoAdapter.filtrar(it) }
-//                return true
-//            }
-//        })
-
+        binding.search.addTextChangedListener { editable ->
+            val textoDigitado = editable.toString()
+            produtoAdapter.filtrar(textoDigitado)
+        }
     }
 
     private fun carregarProdutos() {

@@ -7,7 +7,9 @@ import br.edu.fatecpg.estoque_inteligente.databinding.ItemProdutoBinding
 import br.edu.fatecpg.estoque_inteligente.model.ResProduto
 import java.util.Locale
 
-class ProdutoAdapter(private var produtos: List<ResProduto>) : RecyclerView.Adapter<ProdutoAdapter.ProdutoViewHolder>() {
+class ProdutoAdapter(
+    private var produtos: List<ResProduto>,
+    private val onItemClick: (ResProduto) -> Unit) : RecyclerView.Adapter<ProdutoAdapter.ProdutoViewHolder>() {
 
     private var produtosFiltrados: List<ResProduto> = produtos.toList()
 
@@ -19,8 +21,12 @@ class ProdutoAdapter(private var produtos: List<ResProduto>) : RecyclerView.Adap
     override fun onBindViewHolder(holder: ProdutoViewHolder, position: Int) {
         val produto = produtosFiltrados[position]
         holder.binding.nomeProduto.text = produto.nm_produto
-        holder.binding.valQuantidade.text = produto.val_quantidade.toString()
+        holder.binding.valQuantidade.text = "${produto.val_quantidade} ${produto.type_quantidade ?: ""}"
         holder.binding.categoria.text = produto.labels[0]
+
+        holder.itemView.setOnClickListener {
+            onItemClick(produto)
+        }
     }
 
     override fun getItemCount(): Int = produtosFiltrados.size
