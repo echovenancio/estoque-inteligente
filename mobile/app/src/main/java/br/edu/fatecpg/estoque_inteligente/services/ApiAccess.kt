@@ -142,4 +142,20 @@ class ApiAccess {
         val produto = Json.decodeFromString<ResProduto>(responseBody)
         return produto
     }
+
+
+    suspend fun delete_produto(id: String): Boolean {
+        val token = CredDao().getToken()
+        val client = OkHttpClient()
+        var url_rq = "${api_url}/${base}/estoque/${id}"
+        val request = Request.Builder()
+            .url(url_rq)
+            .header("Authorization", "Bearer ${token}")
+            .delete()
+            .build()
+        val response = makeReq(client, request)
+        val responseBody = response.body?.string() ?: throw Exception("Deu pau ai")
+        return true
+    }
+
 }

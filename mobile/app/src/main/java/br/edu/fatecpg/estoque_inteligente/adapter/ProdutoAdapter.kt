@@ -1,10 +1,13 @@
 package br.edu.fatecpg.estoque_inteligente.adapter
 
+import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import br.edu.fatecpg.estoque_inteligente.databinding.ItemProdutoBinding
 import br.edu.fatecpg.estoque_inteligente.model.ResProduto
+import br.edu.fatecpg.estoque_inteligente.utils.ColorsProvider
 import java.util.Locale
 
 class ProdutoAdapter(
@@ -20,9 +23,20 @@ class ProdutoAdapter(
 
     override fun onBindViewHolder(holder: ProdutoViewHolder, position: Int) {
         val produto = produtosFiltrados[position]
+        val label = produto.labels.getOrNull(0) ?: "Sem categoria"
         holder.binding.nomeProduto.text = produto.nm_produto
         holder.binding.valQuantidade.text = "${produto.val_quantidade} ${produto.type_quantidade ?: ""}"
-        holder.binding.categoria.text = produto.labels.getOrNull(0) ?: "Sem categoria"
+        holder.binding.categoria.text = label
+        val (bg, fg) = ColorsProvider().stringToThemeColors(label)
+        val bgColor = Color.rgb(bg.red, bg.green, bg.blue)
+        val fgColor = Color.rgb(fg.red, fg.green, fg.blue)
+        holder.binding.categoria.text = label
+
+        val background = holder.binding.frameCategoria.background.mutate() as GradientDrawable
+        background.setColor(bgColor)
+
+        holder.binding.categoria.setTextColor(fgColor)
+
 
         holder.itemView.setOnClickListener {
             onItemClick(produto)

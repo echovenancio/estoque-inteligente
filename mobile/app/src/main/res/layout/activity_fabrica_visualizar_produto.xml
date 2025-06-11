@@ -262,19 +262,6 @@
                     app:flexWrap="wrap"
                     app:justifyContent="flex_start" />
 
-                <ImageButton
-                    android:id="@+id/btn_addsabor"
-                    android:layout_width="64dp"
-                    android:layout_height="32dp"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginLeft="16dp"
-                    android:background="@drawable/bg_rounded_button"
-                    android:src="@drawable/adicionar"
-                    android:scaleType="centerInside"
-                    android:padding="2dp"
-                    android:contentDescription="Adicionar sabor"
-                    android:visibility="gone" />
-
             </LinearLayout>
 
 
@@ -288,9 +275,9 @@
         </LinearLayout>
     </ScrollView>
 
-    <!-- Botão editar -->
     <ImageButton
         android:id="@+id/btn_editarproduto"
+        android:visibility="invisible"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="@android:color/transparent"
@@ -298,30 +285,5 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         tools:ignore="SpeakableTextPresentCheck" />
-
-    <ImageButton
-        android:id="@+id/btn_salvarproduto"
-        android:layout_width="56dp"
-        android:layout_height="56dp"
-        android:background="@drawable/circular_blue_button"
-        android:src="@drawable/ic_check"
-        android:scaleType="centerInside"
-        android:contentDescription="Salvar"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <Button
-        android:id="@+id/btn_apagar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:backgroundTint="@color/red"
-        android:text="Excluir Produto"
-        android:visibility="gone"
-        android:textSize="21dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

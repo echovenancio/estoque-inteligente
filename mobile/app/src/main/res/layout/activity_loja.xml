@@ -163,6 +163,7 @@
             android:layout_weight="1"
             android:fontFamily="@font/poppins"
             android:padding="8dp"
+            android:paddingStart="25dp"
             android:text="Sabor"
             android:textSize="17dp"
             android:textColor="@color/black"

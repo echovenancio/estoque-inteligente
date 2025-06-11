@@ -10,6 +10,7 @@ db = get_db_manager()
 @router.post("/login")
 def login(login: Login) -> LoginRes:
     response = db.login(login.email, login.password)
+    print(f"Response from login: {response}")
     return response
 
 @router.get("/estoque")
@@ -44,6 +45,13 @@ def update_estoque(produto: Produto, id: str, token = Security(utils.api_key_sch
     updated_produto = db.update_estoque(id, produto, auth_token)
     utils.background_job(utils.update_cluster, token, db)
     return updated_produto 
+
+@router.delete("/estoque/{id}")
+def delete_produto(id: str, token = Security(utils.api_key_scheme)) -> bool:
+    auth_token = utils.get_auth(token)
+    deleted = db.delete_produto(id, auth_token)
+    utils.background_job(utils.update_cluster, token, db)
+    return deleted
 
 @router.get("/health")
 def health_check() -> dict:

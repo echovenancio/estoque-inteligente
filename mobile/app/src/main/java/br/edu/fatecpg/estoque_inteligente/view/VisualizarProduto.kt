@@ -1,8 +1,13 @@
 package br.edu.fatecpg.estoque_inteligente.view
 import android.content.Intent
+import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
 import android.widget.EditText
@@ -14,9 +19,11 @@ import br.edu.fatecpg.estoque_inteligente.databinding.ActivityVisualizarProdutoB
 import br.edu.fatecpg.estoque_inteligente.model.Produto
 import br.edu.fatecpg.estoque_inteligente.services.ApiAccess
 import kotlinx.coroutines.launch
+import br.edu.fatecpg.estoque_inteligente.utils.ColorsProvider
 
 class VisualizarProduto : AppCompatActivity() {
     private lateinit var binding: ActivityVisualizarProdutoBinding
+    private val colorsProvider = ColorsProvider()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,6 +32,7 @@ class VisualizarProduto : AppCompatActivity() {
 
         val produtoId = intent.getStringExtra("produtoId") ?: ""
         val nome = intent.getStringExtra("nome") ?: "Produto sem nome"
+        val labels = intent.getStringArrayExtra("labels")?.toList() ?: emptyList()
         val qtd = intent.getStringExtra("quantidade") ?: "-"
         val referenciaSelecionada = intent.getStringExtra("referencia") ?: "-"
         val notas = intent.getStringExtra("anotacoes") ?: "Sem anotações"
@@ -41,6 +49,16 @@ class VisualizarProduto : AppCompatActivity() {
         if (idx != -1) binding.referencia.setSelection(idx)
 
         binding.campoanotacoes.setText(notas)
+
+        val inflater = LayoutInflater.from(this)
+        binding.saboresSelecionados.removeAllViews()
+        for (sabor in labels) {
+            val view = inflater.inflate(R.layout.item_sabor_editavel, binding.saboresSelecionados, false)
+            val edtSabor = view.findViewById<EditText>(R.id.edtSabor)
+            edtSabor.setText(sabor)
+            applyColorsToEditText(edtSabor, sabor, colorsProvider)
+            binding.saboresSelecionados.addView(view)
+        }
 
         toggleEditable(false)
 
@@ -73,13 +91,11 @@ class VisualizarProduto : AppCompatActivity() {
                 labels = sabores
             )
 
-            // assuming you have the id of the produto somewhere, e.g. produtoId variable
             val api = ApiAccess()
             lifecycleScope.launch {
                 try {
-                    val updatedProduto = api.update_produto(produtoId, produtoAtualizado)
+                    api.update_produto(produtoId, produtoAtualizado)
                     Toast.makeText(this@VisualizarProduto, "Produto cadastrado!", Toast.LENGTH_SHORT).show()
-                    // handle success, update UI if needed
                     toggleEditable(false)
                     binding.btnSalvarproduto.visibility = View.GONE
                     binding.btnEditarproduto.visibility = View.VISIBLE
@@ -89,25 +105,64 @@ class VisualizarProduto : AppCompatActivity() {
             }
         }
 
-        // btn add sabor click listener
+        binding.btnApagar.setOnClickListener {
+            val api = ApiAccess()
+            lifecycleScope.launch {
+                try {
+                    api.delete_produto(produtoId)
+                    Toast.makeText(this@VisualizarProduto, "Produto excluido!", Toast.LENGTH_SHORT).show()
+                    toggleEditable(false)
+                    binding.btnSalvarproduto.visibility = View.GONE
+                    binding.btnEditarproduto.visibility = View.VISIBLE
+                    val intent = Intent(this@VisualizarProduto, LojaActivity::class.java)
+                    startActivity(intent)
+                    finish()
+                } catch (e: Exception) {
+                    Toast.makeText(this@VisualizarProduto, "Erro ao excluir: ${e.message}", Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+
         binding.btnAddsabor.setOnClickListener {
-            val inflater = LayoutInflater.from(this)
             val view = inflater.inflate(R.layout.item_sabor_editavel, binding.saboresSelecionados, false)
             val edtSabor = view.findViewById<EditText>(R.id.edtSabor)
-
             edtSabor.requestFocus()
-            binding.saboresSelecionados.addView(view)
 
-            // Mostra o teclado automaticamente
+            edtSabor.setOnFocusChangeListener { _, hasFocus ->
+                if (!hasFocus && edtSabor.text.toString().trim().isEmpty()) {
+                    val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+                    imm.hideSoftInputFromWindow(edtSabor.windowToken, 0)
+                    binding.saboresSelecionados.removeView(view)
+                }
+            }
+
+            applyColorsToEditText(edtSabor, "", colorsProvider)
+
+            edtSabor.addTextChangedListener(object : TextWatcher {
+                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                    applyColorsToEditText(edtSabor, s?.toString() ?: "", colorsProvider)
+                }
+                override fun afterTextChanged(s: Editable?) {}
+            })
+
+            val btnAddIndex = binding.saboresSelecionados.indexOfChild(binding.btnAddsabor)
+            if (btnAddIndex == -1) {
+                // fallback, just add at the end if not found for some reason
+                binding.saboresSelecionados.addView(view)
+            } else {
+                binding.saboresSelecionados.addView(view, btnAddIndex)
+            }
+
             val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
             imm.showSoftInput(edtSabor, InputMethodManager.SHOW_IMPLICIT)
         }
+
 
         binding.btnVoltarVisualizar.setOnClickListener {
             finish()
         }
     }
-
 
     private fun toggleEditable(enabled: Boolean) {
         binding.nomeproduto.isEnabled = enabled
@@ -121,11 +176,32 @@ class VisualizarProduto : AppCompatActivity() {
         binding.referencia.isEnabled = enabled
         binding.referencia.isClickable = enabled
         binding.referencia.isFocusable = enabled
+        binding.referencia.isFocusableInTouchMode = enabled  // add this
 
         binding.campoanotacoes.isEnabled = enabled
         binding.campoanotacoes.isFocusable = enabled
         binding.campoanotacoes.isFocusableInTouchMode = enabled
 
         binding.btnAddsabor.visibility = if (enabled) View.VISIBLE else View.GONE
+        binding.btnApagar.visibility = if (enabled) View.VISIBLE else View.GONE
+
+        binding.scrollContent.descendantFocusability =
+            if (enabled) ViewGroup.FOCUS_AFTER_DESCENDANTS else ViewGroup.FOCUS_BLOCK_DESCENDANTS
+    }
+
+
+    private fun applyColorsToEditText(edt: EditText, input: String, colorsProvider: ColorsProvider) {
+        val container = edt.parent as View
+        val background = container.background.mutate() as GradientDrawable
+
+        val (bg, fg) = colorsProvider.stringToThemeColors(input)
+        val bgColor = Color.rgb(bg.red, bg.green, bg.blue)
+        val fgColor = Color.rgb(fg.red, fg.green, fg.blue)
+
+        background.setColor(bgColor)
+        container.background = background
+
+        edt.setTextColor(fgColor)
     }
 }
+

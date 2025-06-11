@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.flexbox.FlexboxLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:flexbox="http://schemas.android.com/apk/res-auto"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:background="@drawable/tagsabor"
-    android:paddingHorizontal="12dp"
-    android:paddingVertical="6dp"
-    android:layout_margin="6dp"
-    android:orientation="horizontal"
+    android:paddingHorizontal="6dp"
+    android:paddingVertical="3dp"
+    android:layout_margin="4dp"
+    flexbox:flexWrap="nowrap"
+    flexbox:justifyContent="flex_start"
     android:gravity="center_vertical">
 
     <EditText
@@ -20,6 +23,12 @@
         android:maxLines="1"
         android:imeOptions="actionDone"
         android:inputType="textCapWords"
-        android:minWidth="60dp"
-        android:padding="4dp" />
-</LinearLayout>
+        android:minWidth="40dp"
+        android:paddingTop="4dp"
+        android:paddingStart="4dp"
+        android:layout_gravity="center_vertical"
+        android:fontFamily="@font/poppins"
+        android:shadowColor="#55000000"
+        android:shadowRadius="2" />
+
+</com.google.android.flexbox.FlexboxLayout>

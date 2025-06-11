@@ -41,11 +41,11 @@ class LojaActivity : AppCompatActivity() {
         animator.start()
 
 //         Botão Voltar para MainActivity
-//        binding.btnVoltar.setOnClickListener {
-//            val intent = Intent(this, MainActivity::class.java)
-//            startActivity(intent)
-//            finish()
-//        }
+        binding.button.setOnClickListener {
+            val intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
+            finish()
+        }
 
         binding.btnAddproduto.setOnClickListener {
             val intent = Intent(this, AddProdutos::class.java)
@@ -60,8 +60,9 @@ class LojaActivity : AppCompatActivity() {
             val intent = Intent(this, VisualizarProduto::class.java).apply {
                 putExtra("produtoId", produto.id)
                 putExtra("nome", produto.nm_produto)
+                putExtra("labels", produto.labels.toTypedArray())
                 putExtra("quantidade", "${produto.val_quantidade} ${produto.type_quantidade ?: ""}")
-                putExtra("referencia", produto.labels.getOrNull(0) ?: "-")
+                putExtra("referencia", produto.type_quantidade)
                 putExtra("anotacoes", produto.anotation ?: "Sem anotações")
             }
             startActivity(intent)
