@@ -22,7 +22,7 @@ class ProdutoAdapter(
         val produto = produtosFiltrados[position]
         holder.binding.nomeProduto.text = produto.nm_produto
         holder.binding.valQuantidade.text = "${produto.val_quantidade} ${produto.type_quantidade ?: ""}"
-        holder.binding.categoria.text = produto.labels[0]
+        holder.binding.categoria.text = produto.labels.getOrNull(0) ?: "Sem categoria"
 
         holder.itemView.setOnClickListener {
             onItemClick(produto)

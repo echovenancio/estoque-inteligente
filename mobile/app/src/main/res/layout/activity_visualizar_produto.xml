@@ -263,7 +263,7 @@
     </LinearLayout>
 
     <ImageButton
-        android:id="@+id/btn_addsabor"
+        android:id="@+id/btn_editarproduto"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="44dp"
@@ -277,5 +277,37 @@
         app:layout_constraintVertical_bias="0.406"
         app:srcCompat="@drawable/editardark"
         tools:ignore="SpeakableTextPresentCheck" />
+
+    <ImageButton
+        android:visibility="gone"
+        android:id="@+id/btn_addsabor"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="44dp"
+        android:layout_marginBottom="12dp"
+        android:background="#00000000"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.954"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView30"
+        app:layout_constraintVertical_bias="0.406"
+        app:srcCompat="@drawable/adicionar"
+        tools:ignore="SpeakableTextPresentCheck" />
+
+    <Button
+        android:id="@+id/btn_salvarproduto"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="32dp"
+        android:text="Salvar"
+        android:layout_weight="1"
+        android:backgroundTint="@color/orange"
+        android:textSize="21dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

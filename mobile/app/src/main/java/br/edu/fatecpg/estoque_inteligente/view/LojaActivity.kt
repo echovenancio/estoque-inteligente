@@ -24,6 +24,11 @@ class LojaActivity : AppCompatActivity() {
     private lateinit var binding: ActivityLojaBinding
     private lateinit var produtoAdapter: ProdutoAdapter
 
+    override fun onResume() {
+        super.onResume()
+        carregarProdutos()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityLojaBinding.inflate(layoutInflater)
@@ -42,7 +47,7 @@ class LojaActivity : AppCompatActivity() {
 //            finish()
 //        }
 
-        binding.btnAddsabor.setOnClickListener {
+        binding.btnAddproduto.setOnClickListener {
             val intent = Intent(this, AddProdutos::class.java)
             startActivity(intent)
             finish()
@@ -51,11 +56,19 @@ class LojaActivity : AppCompatActivity() {
 
         // Configura RecyclerView
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
-        produtoAdapter = ProdutoAdapter(emptyList()) // Inicializa com lista vazia
+        produtoAdapter = ProdutoAdapter(emptyList()) { produto ->
+            val intent = Intent(this, VisualizarProduto::class.java).apply {
+                putExtra("produtoId", produto.id)
+                putExtra("nome", produto.nm_produto)
+                putExtra("quantidade", "${produto.val_quantidade} ${produto.type_quantidade ?: ""}")
+                putExtra("referencia", produto.labels.getOrNull(0) ?: "-")
+                putExtra("anotacoes", produto.anotation ?: "Sem anotações")
+            }
+            startActivity(intent)
+        }
         binding.recyclerView.adapter = produtoAdapter
 
         // Carregar dados dos produtos
-        carregarProdutos()
 //
         binding.search.addTextChangedListener { editable ->
             val textoDigitado = editable.toString()
