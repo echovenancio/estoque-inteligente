@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Request, Security
 
 import utils
+import ml
 from database.manager_getter import get_db_manager
 from domain.models import ResProduto, Produto, Login, LoginRes
 
@@ -17,6 +18,12 @@ def login(login: Login) -> LoginRes:
 def estoque(request: Request, token = Security(utils.api_key_scheme)) -> list[ResProduto]:
     auth_token = utils.get_auth(token)
     estoque = db.get_estoque(auth_token)
+    best_describer = ml.return_dict_of_clusterId_with_describer(estoque)
+    if best_describer is not None:
+        for produto in estoque:
+            b = best_describer.get(produto.cluster_id, "")
+            if b != "":
+                produto.best_describer = b
     return estoque
 
 @router.get("/categorias")

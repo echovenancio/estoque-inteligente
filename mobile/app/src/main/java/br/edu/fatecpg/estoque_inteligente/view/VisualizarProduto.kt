@@ -95,7 +95,7 @@ class VisualizarProduto : AppCompatActivity() {
             lifecycleScope.launch {
                 try {
                     api.update_produto(produtoId, produtoAtualizado)
-                    Toast.makeText(this@VisualizarProduto, "Produto cadastrado!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@VisualizarProduto, "Produto atualizado!", Toast.LENGTH_SHORT).show()
                     toggleEditable(false)
                     binding.btnSalvarproduto.visibility = View.GONE
                     binding.btnEditarproduto.visibility = View.VISIBLE

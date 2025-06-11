@@ -23,7 +23,7 @@ class ProdutoAdapter(
 
     override fun onBindViewHolder(holder: ProdutoViewHolder, position: Int) {
         val produto = produtosFiltrados[position]
-        val label = produto.labels.getOrNull(0) ?: "Sem categoria"
+        val label = produto.best_describer
         holder.binding.nomeProduto.text = produto.nm_produto
         holder.binding.valQuantidade.text = "${produto.val_quantidade} ${produto.type_quantidade ?: ""}"
         holder.binding.categoria.text = label

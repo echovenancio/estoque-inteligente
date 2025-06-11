@@ -285,7 +285,23 @@
                 android:layout_marginTop="12dp"
                 android:orientation="vertical" />
 
+            <Button
+                android:id="@+id/btn_apagar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:backgroundTint="@color/red"
+                android:text="Excluir Produto"
+                android:visibility="gone"
+                android:layout_marginTop="20dp"
+                android:textSize="21dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent" />
+
         </LinearLayout>
+
+
     </ScrollView>
 
     <!-- Botão editar -->
@@ -311,17 +327,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <Button
-        android:id="@+id/btn_apagar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:backgroundTint="@color/red"
-        android:text="Excluir Produto"
-        android:visibility="gone"
-        android:textSize="21dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
