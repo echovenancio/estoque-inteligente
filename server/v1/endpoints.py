@@ -23,7 +23,7 @@ def estoque(request: Request, token = Security(utils.api_key_scheme)) -> list[Re
         for produto in estoque:
             b = best_describer.get(produto.cluster_id, "")
             if b != "":
-                produto.best_describer = b
+                produto.best_describer = b.lower()
     return estoque
 
 @router.get("/categorias")

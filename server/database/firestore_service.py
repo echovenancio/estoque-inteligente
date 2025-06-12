@@ -17,17 +17,14 @@ def load_json_produto_into_obj(json_produto):
     for json_label in json_produto["fields"]["labels"]["arrayValue"]["values"]:
         labels.append(json_label["stringValue"])
     val_q = json_produto["fields"]["val_quantidade"]
+    print(f"val_q: {val_q}")
     val_quantidade = val_q.get("doubleValue")
-    val_f = 0.0
-    if val_quantidade is None:
-        val_quantidade = val_q.get("integerValue")
-        if val_quantidade is not None:
-            val_f = float(val_quantidade)
+    print(f"val_quantidade: {val_quantidade}")
     produto = ResProduto(
         id=id, 
         nm_produto=json_produto["fields"]["nm_produto"]["stringValue"], 
         type_quantidade=json_produto["fields"]["type_quantidade"]["stringValue"],
-        val_quantidade=val_f,
+        val_quantidade=val_quantidade if val_quantidade is not None else 0.0,
         anotation=json_produto["fields"]["anotation"]["stringValue"],
         cluster_id=json_produto["fields"]["cluster_id"]["integerValue"],
         labels=labels,
@@ -102,7 +99,7 @@ class FirestoreDBManager(GenericDBManager):
             "fields": {
                 "nm_produto": {"stringValue": produto.nm_produto},
                 "type_quantidade": {"stringValue": produto.type_quantidade},
-                "val_quantidade": {"doubleValue": produto.val_quantidade},
+                "val_quantidade": {"doubleValue": str(produto.val_quantidade)},
                 "labels": labels,
                 "anotation": {"stringValue": produto.anotation},
                 "cluster_id": {"integerValue": -1}
@@ -119,7 +116,7 @@ class FirestoreDBManager(GenericDBManager):
             "fields": {
                 "nm_produto": {"stringValue": produto.nm_produto},
                 "type_quantidade": {"stringValue": produto.type_quantidade},
-                "val_quantidade": {"doubleValue": produto.val_quantidade},
+                "val_quantidade": {"doubleValue": str(produto.val_quantidade)},
                 "labels": labels,
                 "anotation": {"stringValue": produto.anotation},
                 "cluster_id": {"integerValue": -1}
