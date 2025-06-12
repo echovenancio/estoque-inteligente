@@ -29,6 +29,7 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(binding.root)
 
+        // Animação Logo girante
         val logoImage = binding.logoImage
         val animator = AnimatorInflater.loadAnimator(this, R.animator.rotate_logo)
         animator.setTarget(logoImage)

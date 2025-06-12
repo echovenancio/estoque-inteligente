@@ -130,3 +130,10 @@ class FirestoreDBManager(GenericDBManager):
         self.__raise_exception_if_there_iserror(response.status_code)
         documents = response.json()["documents"]
         return len(documents)
+
+    def delete_produto(self, id, auth_token) -> bool:
+        headers = get_headers(auth_token)
+        url = f"{self.firebase_db_url}{id}"
+        response = requests.delete(url, headers=headers)
+        self.__raise_exception_if_there_iserror(response.status_code)
+        return response.status_code == 200

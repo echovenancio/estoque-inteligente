@@ -27,6 +27,7 @@ class ResProduto(BaseModel):
     cluster_id: int
     created_at: str
     updated_at: str
+    best_describer: str = ""
 
 class Login(BaseModel):
     email: str = Field(min_length=1, max_length=300, description="Email do usuário cadastrado no sistema")

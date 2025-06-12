@@ -1,15 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-
-
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="fill_parent"
     android:padding="8dp">
-
-
 
     <!-- Nome do Produto -->
 
@@ -23,8 +19,6 @@
         android:orientation="horizontal"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
-
-
 
         <ImageView
             android:id="@+id/logoImage"
@@ -85,21 +79,16 @@
         android:layout_marginTop="20dp"
         android:fontFamily="@font/poppins"
         android:gravity="center"
-        android:text="Clique em um produto para vizualizar"
+        android:text="Clique em um produto para visualizar"
         android:textColor="#545454"
         android:textSize="18dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textInputLayout" />
 
-
-
-        <!--ERROS: Não consegui mudar a cor da borda para color twoblue-->
-
-
+    <!--ERROS: Não consegui mudar a cor da borda para color twoblue-->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/textInputLayout"
-
         style="@style/CustomTextInputStyle"
         android:layout_width="290dp"
         android:layout_height="50dp"
@@ -123,14 +112,12 @@
         app:layout_constraintTop_toBottomOf="@+id/txv_bemvindo">
 
         <com.google.android.material.textfield.TextInputEditText
-
             android:id="@+id/search"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:drawablePadding="8dp"
             android:hint="Procurar produto"
             android:padding="15dp"
-
             android:textSize="18sp" />
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -153,8 +140,8 @@
             android:fontFamily="@font/poppins"
             android:padding="8dp"
             android:text="Nome"
-            android:textSize="17dp"
             android:textColor="@color/black"
+            android:textSize="17dp"
             android:textStyle="bold" />
 
         <TextView
@@ -165,8 +152,8 @@
             android:fontFamily="@font/poppins"
             android:padding="8dp"
             android:text="Quantidade"
-            android:textSize="17dp"
             android:textColor="@color/black"
+            android:textSize="17dp"
             android:textStyle="bold" />
 
         <TextView
@@ -176,16 +163,17 @@
             android:layout_weight="1"
             android:fontFamily="@font/poppins"
             android:padding="8dp"
+            android:paddingStart="25dp"
             android:text="Sabor"
-            android:textSize="17dp"
             android:textColor="@color/black"
+            android:textSize="17dp"
             android:textStyle="bold" />
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
-        android:layout_width="392dp"
-        android:layout_height="281dp"
+        android:layout_width="395dp"
+        android:layout_height="300dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.333"
         app:layout_constraintStart_toStartOf="parent"
@@ -203,17 +191,17 @@
         app:layout_constraintTop_toBottomOf="@+id/textView2" />
 
     <ImageButton
-        android:id="@+id/btn_addsabor"
+        android:id="@+id/btn_addproduto"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
         android:background="#00000000"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.948"
+        app:layout_constraintHorizontal_bias="0.942"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/recyclerView"
-        app:layout_constraintVertical_bias="0.0"
+        app:layout_constraintVertical_bias="0.714"
         app:srcCompat="@drawable/adicionar"
         tools:ignore="SpeakableTextPresentCheck" />
 

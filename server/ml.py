@@ -1,3 +1,5 @@
+from collections import defaultdict
+import numpy as np
 import os
 import joblib
 import pandas as pd
@@ -45,3 +47,32 @@ def fit_model(lista_produtos: list[ResProduto], n_clusters: int):
     model = KMeans(n_clusters=n_clusters, random_state=42)
     model.fit(X)
     return model.predict(X)
+
+# Function to return a dictionary of cluster IDs with their descriptions
+# The descriptions are the value in the vectorizer of that cluster that has the
+# biggest sum of it's components
+
+
+def return_dict_of_clusterId_with_describer(lista_produtos: list[ResProduto]) -> dict:
+    if len(lista_produtos) == 0:
+        return None
+    docs = [document_from_produto(produto) for produto in lista_produtos]
+    cluster_ids = [produto.cluster_id for produto in lista_produtos]
+
+    vectorizer = TfidfVectorizer(stop_words=stopwords_pt, lowercase=True)
+    X = vectorizer.fit_transform(docs)
+    feature_names = vectorizer.get_feature_names_out()
+
+    cluster_to_indices = defaultdict(list)
+    for idx, cluster_id in enumerate(cluster_ids):
+        cluster_to_indices[cluster_id].append(idx)
+
+    best_descriptions = {}
+    for cluster_id, indices in cluster_to_indices.items():
+        cluster_matrix = X[indices]
+        tfidf_sum = np.asarray(cluster_matrix.sum(axis=0)).ravel()
+        top_word_index = tfidf_sum.argmax()
+        best_word = feature_names[top_word_index]
+        best_descriptions[cluster_id] = best_word
+
+    return best_descriptions

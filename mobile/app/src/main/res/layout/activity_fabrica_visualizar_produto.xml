@@ -2,19 +2,18 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp">
+    android:padding="16dp"
+    tools:context=".VisualizarProdutoActivity">
 
-    <!-- * Arrumar os ID's
-         * Fazer uma view
-         * Os botões funcionarem (Isso em todas as telas)
-         * Arrumar o codigo na view como fazer a logo girar,
-           botões que redireciorem e etc (todas as telas)-->
+    <!-- Botão Voltar -->
 
+    <!-- Logo -->
     <Button
-        android:id="@+id/btn_voltar_2"
+        android:id="@+id/btn_voltar_visualizar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
@@ -50,13 +49,14 @@
             android:textStyle="bold" />
     </LinearLayout>
 
+    <!-- Scrollable content -->
     <ScrollView
         android:id="@+id/scroll_content"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:fillViewport="true"
         app:layout_constraintTop_toBottomOf="@+id/linearLayout"
-        app:layout_constraintBottom_toTopOf="@+id/btn_cadastrar"
+        app:layout_constraintBottom_toTopOf="@+id/btn_editarproduto"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
@@ -75,7 +75,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/poppins"
-                android:text="Adicionar novo produto 🍰"
+                android:text="Visualizar produto 👀"
                 android:textColor="@color/black"
                 android:textSize="22sp" />
 
@@ -95,8 +95,8 @@
                     android:hint="Nome do produto"
                     android:padding="15dp"
                     android:textSize="18sp"
-                    android:enabled="true"
-                    android:focusable="true" />
+                    android:enabled="false"
+                    android:focusable="false" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Quantidade + Referência -->
@@ -183,8 +183,8 @@
                         android:layout_width="match_parent"
                         android:layout_height="56dp"
                         android:clickable="false"
-                        android:enabled="true"
-                        android:focusable="true"
+                        android:enabled="false"
+                        android:focusable="false"
                         android:gravity="center"
                         android:padding="8dp"
                         android:spinnerMode="dropdown" />
@@ -221,8 +221,8 @@
                         android:layout_width="324dp"
                         android:layout_height="150dp"
                         android:background="@android:color/transparent"
-                        android:enabled="true"
-                        android:focusable="true"
+                        android:enabled="false"
+                        android:focusable="false"
                         android:gravity="top|start"
                         android:hint="Anote aqui..."
                         android:inputType="textMultiLine"
@@ -262,20 +262,8 @@
                     app:flexWrap="wrap"
                     app:justifyContent="flex_start" />
 
-                <ImageButton
-                    android:id="@+id/btn_addsabor"
-                    android:layout_width="64dp"
-                    android:layout_height="32dp"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginLeft="16dp"
-                    android:background="@drawable/bg_rounded_button"
-                    android:src="@drawable/adicionar"
-                    android:scaleType="centerInside"
-                    android:padding="2dp"
-                    android:contentDescription="Adicionar sabor"
-                    android:visibility="visible" />
-
             </LinearLayout>
+
 
             <LinearLayout
                 android:id="@+id/saboresDisponiveis"
@@ -287,16 +275,15 @@
         </LinearLayout>
     </ScrollView>
 
-    <Button
-        android:id="@+id/btn_cadastrar"
+    <ImageButton
+        android:id="@+id/btn_editarproduto"
+        android:visibility="invisible"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:backgroundTint="@color/orange"
-        android:text="Cadastrar"
-        android:textSize="21dp"
+        android:background="@android:color/transparent"
+        android:src="@drawable/editardark"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        tools:ignore="SpeakableTextPresentCheck" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

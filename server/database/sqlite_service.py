@@ -161,3 +161,16 @@ class DevDBManager(GenericDBManager):
             return row[0]
         else:
             raise InternalServer()
+
+    def delete_produto(self, id, auth_token) -> bool:
+        print(f"Deleting product with id: {id}")
+        conn = self._get_db_conn()
+        try:
+            cursor = conn.cursor() 
+            cursor.execute("DELETE FROM estoque WHERE uuid = ?", (id,))
+            conn.commit()
+            cursor.close()
+            print(f"Product with id: {id} deleted successfully")
+        except Exception as e:
+            raise NotFound("Produto")
+        return True

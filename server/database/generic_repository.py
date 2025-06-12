@@ -33,3 +33,7 @@ class GenericDBManager(ABC):
     @abstractmethod
     def update_cluster(self, id, cluster_id, auth_token):
         pass
+
+    @abstractmethod
+    def delete_produto(self, id, auth_token) -> bool:
+        pass
