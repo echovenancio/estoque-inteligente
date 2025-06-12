@@ -16,27 +16,33 @@ def load_json_produto_into_obj(json_produto):
     labels = []
     for json_label in json_produto["fields"]["labels"]["arrayValue"]["values"]:
         labels.append(json_label["stringValue"])
+    val_q = json_produto["fields"]["val_quantidade"]
+    print(f"val_q: {val_q}")
+    val_quantidade = val_q.get("doubleValue")
+    print(f"val_quantidade: {val_quantidade}")
     produto = ResProduto(
         id=id, 
         nm_produto=json_produto["fields"]["nm_produto"]["stringValue"], 
         type_quantidade=json_produto["fields"]["type_quantidade"]["stringValue"],
-        val_quantidade=json_produto["fields"]["val_quantidade"]["doubleValue"],
+        val_quantidade=val_quantidade if val_quantidade is not None else 0.0,
         anotation=json_produto["fields"]["anotation"]["stringValue"],
         cluster_id=json_produto["fields"]["cluster_id"]["integerValue"],
         labels=labels,
-        created_at=json_produto["createTime"],
-        updated_at=json_produto["updateTime"])
+        created_at="",
+        updated_at="")
     return produto
 
 class FirestoreDBManager(GenericDBManager):
     def __init__(self):
-        self.firebase_project_id = settings.firebase_project_id("FIREBASE_PROJECT_ID")
-        self.firebase_api_key = settings.firebase_api_key("FIREBASE_API_KEY")
+        self.firebase_project_id = settings.firebase_project_id
+        self.firebase_api_key = settings.firebase_api_key
         self.firebase_auth_url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={self.firebase_api_key}"
-        self.firebase_db_url = f"https://firestore.googleapis.com/v1/projects/{self.firebase_project_id}/databases/(default)/documents/estoque/"
+        self.firebase_db_url = f"https://firestore.googleapis.com/v1/projects/{self.firebase_project_id}/databases/(default)/documents/estoque"
 
-    def __raise_exception_if_there_iserror(code):
+    def __raise_exception_if_there_iserror(self, code):
         match (code):
+            case 400:
+                raise InternalServer()
             case 401:
                 raise Unauthorized()
             case 404:
@@ -56,13 +62,16 @@ class FirestoreDBManager(GenericDBManager):
 
     def get_estoque(self, auth_token):
         headers = get_headers(auth_token)
-        response = requests.get(f"self.firebase_db_url/orderBy=\"cluster_id\"", headers=headers)
+        url = f"{self.firebase_db_url}"
+        response = requests.get(url, headers=headers)
+        print("Resposta", response)
+        print("Resposta JSON", response.json())
         self.__raise_exception_if_there_iserror(response.status_code)
         documents = response.json()["documents"]
         estoque = []
         for document in documents:
             estoque.append(load_json_produto_into_obj(document))
-        return estoque
+        return sorted(estoque, key=lambda p: p.cluster_id)
 
     # Temporário, esse código é bem ridiculo mas é só pra ter algo rápido, vou refatorar isso.
     def get_categorias(self, auth_token) -> list[str]:
@@ -75,11 +84,13 @@ class FirestoreDBManager(GenericDBManager):
 
     def get_produto(self, id, auth_token):
         headers = get_headers(auth_token)
-        url = f"{self.firebase_db_url}{id}"
+        print(headers)
+        url = f"{self.firebase_db_url}/{id}"
         response = requests.get(url, headers=headers)
         self.__raise_exception_if_there_iserror(response.status_code)
+        print("Resposta", response)
+        print("Resposta JSON", response.json())
         return load_json_produto_into_obj(response.json())
-
 
     def add_estoque(self, produto, auth_token):
         headers = get_headers(auth_token)
@@ -87,7 +98,8 @@ class FirestoreDBManager(GenericDBManager):
         request_data = {
             "fields": {
                 "nm_produto": {"stringValue": produto.nm_produto},
-                "quantidade": {"integerValue": produto.quantidade},
+                "type_quantidade": {"stringValue": produto.type_quantidade},
+                "val_quantidade": {"doubleValue": str(produto.val_quantidade)},
                 "labels": labels,
                 "anotation": {"stringValue": produto.anotation},
                 "cluster_id": {"integerValue": -1}
@@ -103,24 +115,29 @@ class FirestoreDBManager(GenericDBManager):
         request_data = {
             "fields": {
                 "nm_produto": {"stringValue": produto.nm_produto},
-                "quantidade": {"integerValue": produto.quantidade},
+                "type_quantidade": {"stringValue": produto.type_quantidade},
+                "val_quantidade": {"doubleValue": str(produto.val_quantidade)},
                 "labels": labels,
                 "anotation": {"stringValue": produto.anotation},
+                "cluster_id": {"integerValue": -1}
             }
         }
-        url = f"{self.firebase_db_url}{id}"
+        url = f"{self.firebase_db_url}/{id}"
         response = requests.patch(url, data=json.dumps(request_data), headers=headers)
+        print("Resposta", response)
+        print("Resposta JSON", response.json())
         self.__raise_exception_if_there_iserror(response.status_code)
         return load_json_produto_into_obj(response.json())
 
     def update_cluster(self, id, cluster_id, auth_token):
+        print(f"Atualizando cluster do produto {id} para {cluster_id}")
         headers = get_headers(auth_token)
         request_data = {
             "fields": {
-                "cluster_id": {"integerValue": cluster_id}
+                "cluster_id": {"integerValue": str(cluster_id)}
             }
         }
-        url = f"{self.firebase_db_url}{id}"
+        url = f"{self.firebase_db_url}/{id}?updateMask.fieldPaths=cluster_id"
         response = requests.patch(url, data=json.dumps(request_data), headers=headers)
         self.__raise_exception_if_there_iserror(response.status_code)
 
@@ -133,7 +150,7 @@ class FirestoreDBManager(GenericDBManager):
 
     def delete_produto(self, id, auth_token) -> bool:
         headers = get_headers(auth_token)
-        url = f"{self.firebase_db_url}{id}"
+        url = f"{self.firebase_db_url}/{id}"
         response = requests.delete(url, headers=headers)
         self.__raise_exception_if_there_iserror(response.status_code)
         return response.status_code == 200

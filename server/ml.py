@@ -20,7 +20,7 @@ model: KMeans = KMeans()
 def model_need_refit(estoque_size: int, model: KMeans) -> bool:
     if model is None:
         return True
-    cluster_estimate = max(1, int(estoque_size / 5))
+    cluster_estimate = max(1, int(estoque_size / 3))
     return cluster_estimate != len(model.cluster_centers_)
 
 def document_from_produto(produto: ResProduto) -> str:

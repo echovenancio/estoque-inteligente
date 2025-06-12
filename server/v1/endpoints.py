@@ -23,7 +23,7 @@ def estoque(request: Request, token = Security(utils.api_key_scheme)) -> list[Re
         for produto in estoque:
             b = best_describer.get(produto.cluster_id, "")
             if b != "":
-                produto.best_describer = b
+                produto.best_describer = b.lower()
     return estoque
 
 @router.get("/categorias")
@@ -42,22 +42,24 @@ def get_produto(request: Request, id: str, token = Security(utils.api_key_scheme
 @router.post("/estoque")
 def add_estoque(produto: Produto, token = Security(utils.api_key_scheme)) -> ResProduto:
     auth_token = utils.get_auth(token)
+    produto.labels = [label.lower() for label in produto.labels]
     ret_prod = db.add_estoque(produto, auth_token)
-    utils.background_job(utils.update_cluster, token, db)
+    utils.background_job(utils.update_cluster, auth_token, db)
     return ret_prod 
 
 @router.put("/estoque/{id}")
 def update_estoque(produto: Produto, id: str, token = Security(utils.api_key_scheme)) -> ResProduto:
     auth_token = utils.get_auth(token)
+    produto.labels = [label.lower() for label in produto.labels]
     updated_produto = db.update_estoque(id, produto, auth_token)
-    utils.background_job(utils.update_cluster, token, db)
+    utils.background_job(utils.update_cluster, auth_token, db)
     return updated_produto 
 
 @router.delete("/estoque/{id}")
 def delete_produto(id: str, token = Security(utils.api_key_scheme)) -> bool:
     auth_token = utils.get_auth(token)
     deleted = db.delete_produto(id, auth_token)
-    utils.background_job(utils.update_cluster, token, db)
+    utils.background_job(utils.update_cluster, auth_token, db)
     return deleted
 
 @router.get("/health")
