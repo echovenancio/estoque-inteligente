@@ -19,7 +19,7 @@ def update_cluster(auth_token: str, db: GenericDBManager):
     if len(produtos) == 0:
         print("No products to update cluster.")
         return
-    updated_cluster_id = ml.fit_model(produtos, max(1, int(len(produtos) / 5)))
+    updated_cluster_id = ml.fit_model(produtos, max(1, int(len(produtos) / 3)))
     print(f"Updated cluster IDs: {updated_cluster_id}")
     for produto, cluster_id in zip(produtos, updated_cluster_id):
         db.update_cluster(produto.id, int(cluster_id), auth_token)
