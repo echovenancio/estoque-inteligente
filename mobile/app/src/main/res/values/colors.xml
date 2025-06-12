@@ -13,5 +13,6 @@
     <color name="red">#bd1010</color>
     <color name="orange">#ed902f</color>
     <color name="lightgrey">#f1f1f1</color>
-
+    <color name="lightgreyble">#8899bb</color>
+    <color name="gray">#bbbbbb</color>
 </resources>

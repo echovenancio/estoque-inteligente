@@ -1,19 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:padding="8dp">
-
-    <!-- Nome do Produto -->
+    android:layout_height="match_parent" android:padding="8dp">
 
     <LinearLayout
         android:id="@+id/linearLayout"
-        android:layout_width="219dp"
-        android:layout_height="66dp"
-        android:layout_marginStart="16dp"
+        android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="16dp"
         android:layout_marginTop="24dp"
         android:gravity="center"
         android:orientation="horizontal"
@@ -36,47 +30,102 @@
             android:text="@string/logo_text"
             android:textSize="35sp"
             android:textStyle="bold" />
-
-
     </LinearLayout>
 
     <Button
         android:id="@+id/button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="30dp"
         android:layout_marginTop="32dp"
-        android:layout_weight="1"
         android:backgroundTint="@color/red"
         android:text="Sair"
         android:textSize="21dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.285"
         app:layout_constraintStart_toEndOf="@+id/linearLayout"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintHorizontal_bias="0.8" /> <TextView
+    android:id="@+id/txv_bemvindo"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="10dp" android:fontFamily="@font/poppins"
+    android:gravity="center"
+    android:text="Bem vindo, Fabrica! 🏭"
+    android:textColor="@color/black"
+    android:textSize="22dp"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toBottomOf="@+id/linearLayout" /> <com.google.android.material.textfield.TextInputLayout
+    android:id="@+id/textInputLayout"
+    style="@style/CustomTextInputStyle"
+    android:layout_width="290dp"
+    android:layout_height="50dp"
+    android:layout_marginTop="10dp"
+    android:textColor="@color/white"
+    android:textColorHint="@color/white"
+    app:boxBackgroundColor="@color/Lightblue"
+    app:boxBackgroundMode="outline"
+    app:boxCornerRadiusBottomEnd="25dp"
+    app:boxCornerRadiusBottomStart="25dp"
+    app:boxCornerRadiusTopEnd="25dp"
+    app:boxCornerRadiusTopStart="25dp"
+    app:boxStrokeColor="@color/twoblue"
+    app:boxStrokeWidth="2dp"
+    app:endIconDrawable="@drawable/lupa"
+    app:endIconMode="custom"
+    app:endIconTint="@color/white"
+    app:hintEnabled="false"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintHorizontal_bias="0.496"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toBottomOf="@+id/txv_bemvindo">
 
+    <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/search"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColorHint="@color/white"
+        android:textColor="@color/white"
+        android:drawablePadding="8dp"
+        android:hint="Procurar produto"
+        android:padding="15dp"
+        android:textSize="16sp" />
+</com.google.android.material.textfield.TextInputLayout>
 
-    <!--Deixei assim pois @color/grey não funcionava e dava problema de renderização  -->
-
-    <TextView
-        android:id="@+id/txv_bemvindo"
+    <LinearLayout
+        android:id="@+id/wrapperSwitch"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="100dp"
-        android:fontFamily="@font/poppins"
+        android:orientation="horizontal"
         android:gravity="center"
-        android:text="Bem vindo, Fabrica! 🏭"
-        android:textColor="@color/black"
-        android:textSize="22dp"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="10dp"
+        app:layout_constraintTop_toBottomOf="@+id/textInputLayout"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Somente Esgotados"
+            android:textSize="16sp"
+            android:textColor="@color/black"
+            android:paddingEnd="8dp"
+            android:gravity="center_vertical"/>
+
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/toggleOutOfStock"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:padding="8dp"
+            app:thumbTint="@color/switch_thumb_color"
+            app:trackTint="@color/switch_track_color" />
+    </LinearLayout>
 
     <TextView
         android:id="@+id/textView2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="10dp"
         android:fontFamily="@font/poppins"
         android:gravity="center"
         android:text="Clique em um produto para visualizar"
@@ -84,42 +133,16 @@
         android:textSize="18dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textInputLayout" />
+        app:layout_constraintTop_toBottomOf="@+id/wrapperSwitch" />
 
-    <!--ERROS: Não consegui mudar a cor da borda para color twoblue-->
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/textInputLayout"
-        style="@style/CustomTextInputStyle"
-        android:layout_width="290dp"
-        android:layout_height="50dp"
-        android:layout_marginTop="10dp"
-        android:textColor="@color/white"
-        android:textColorHint="@color/white"
-        app:boxBackgroundColor="@color/Lightblue"
-        app:boxBackgroundMode="outline"
-        app:boxCornerRadiusBottomEnd="25dp"
-        app:boxCornerRadiusBottomStart="25dp"
-        app:boxCornerRadiusTopEnd="25dp"
-        app:boxCornerRadiusTopStart="25dp"
-        app:boxStrokeColor="@color/twoblue"
-        app:boxStrokeWidth="2dp"
-        app:endIconDrawable="@drawable/lupa"
-        app:endIconMode="custom"
-        app:endIconTint="@color/white"
+    <View
+        android:id="@+id/linhaAzul"
+        android:layout_width="match_parent" android:layout_height="3dp"
+        android:layout_marginTop="12dp"
+        android:background="@drawable/linhaarredondada"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.496"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/txv_bemvindo">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/search"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:drawablePadding="8dp"
-            android:hint="Procurar produto"
-            android:padding="15dp"
-            android:textSize="18sp" />
-        </com.google.android.material.textfield.TextInputLayout>
+        app:layout_constraintTop_toBottomOf="@+id/textView2" />
 
     <LinearLayout
         android:id="@+id/headerLayout"
@@ -172,22 +195,12 @@
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
-        android:layout_width="392dp"
-        android:layout_height="281dp"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_width="match_parent"
+        android:layout_height="0dp" app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.333"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/headerLayout" />
+        app:layout_constraintTop_toBottomOf="@+id/headerLayout" app:layout_constraintBottom_toBottomOf="parent" />
+    />
 
-    <View
-        android:id="@+id/linhaAzul"
-        android:layout_width="370dp"
-        android:layout_height="3dp"
-        android:layout_marginTop="12dp"
-        android:background="@drawable/linhaarredondada"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.68"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView2" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

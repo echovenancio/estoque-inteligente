@@ -24,6 +24,7 @@ import kotlinx.coroutines.withContext
 class FabricaActivity : AppCompatActivity() {
     private lateinit var binding: ActivityFabricaBinding
     private lateinit var produtoAdapter: ProdutoAdapter
+    private var produtosOriginais: List<ResProduto> = emptyList()
 
     override fun onResume() {
         super.onResume()
@@ -63,6 +64,15 @@ class FabricaActivity : AppCompatActivity() {
         }
         binding.recyclerView.adapter = produtoAdapter
 
+        binding.toggleOutOfStock.setOnCheckedChangeListener { _, isChecked ->
+            filtrarProdutos(isChecked, binding.search.text?.toString() ?: "")
+        }
+
+        // search listener
+        binding.search.addTextChangedListener { editable ->
+            filtrarProdutos(binding.toggleOutOfStock.isChecked, editable.toString())
+        }
+
         // Carregar dados dos produtos
 //
         binding.search.addTextChangedListener { editable ->
@@ -71,32 +81,39 @@ class FabricaActivity : AppCompatActivity() {
         }
     }
 
+    private fun filtrarProdutos(somenteZerados: Boolean, textoBusca: String) {
+        val filtrados = produtosOriginais
+            .filter { !somenteZerados || it.val_quantidade == 0.0f }
+            .filter { it.nm_produto.contains(textoBusca, ignoreCase = true) }
+
+        produtoAdapter.atualizarLista(filtrados)
+    }
+
     private fun carregarProdutos() {
         lifecycleScope.launch(Dispatchers.IO) {
             val api = ApiAccess()
             try {
-                val produtos: List<ResProduto> = api.get_estoque()
-
-                //verificar a resposta da API no logcat
-                Log.d("API_RESPONSE", "Produtos recebidos: $produtos")
+                val produtos = api.get_estoque()
+                produtosOriginais = produtos // <- store full list
 
                 withContext(Dispatchers.Main) {
-                    if (produtos.isNotEmpty()) {
-                        produtoAdapter.atualizarLista(produtos)
-
-                        // Logcat para confirmar que o RecyclerView foi atualizado
-                        Log.d("UI_UPDATE", "RecyclerView atualizado com ${produtos.size} produtos")
-                    } else {
-                        Log.d("API_RESPONSE", "Nenhum produto recebido")
-                    }
+                    filtrarProdutos(
+                        binding.toggleOutOfStock.isChecked,
+                        binding.search.text?.toString() ?: ""
+                    )
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(this@FabricaActivity, "Erro ao carregar produtos", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this@FabricaActivity,
+                        "Erro ao carregar produtos",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
                 Log.e("API_ERROR", "Erro ao carregar produtos", e)
             }
         }
+
     }
 
-}
+    }

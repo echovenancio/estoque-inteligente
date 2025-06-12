@@ -25,7 +25,13 @@ class ProdutoAdapter(
         val produto = produtosFiltrados[position]
         val label = produto.best_describer
         holder.binding.nomeProduto.text = produto.nm_produto
-        holder.binding.valQuantidade.text = "${produto.val_quantidade} ${produto.type_quantidade ?: ""}"
+        if (produto.val_quantidade == 0.0f) {
+            holder.binding.valQuantidade.text = "Esgotado"
+            holder.binding.valQuantidade.setTextColor(Color.RED)
+        } else {
+            holder.binding.valQuantidade.text = "${produto.val_quantidade} ${produto.type_quantidade ?: ""}"
+            holder.binding.valQuantidade.setTextColor(Color.BLACK)
+        }
         holder.binding.categoria.text = label
         val (bg, fg) = ColorsProvider().stringToThemeColors(label)
         val bgColor = Color.rgb(bg.red, bg.green, bg.blue)
