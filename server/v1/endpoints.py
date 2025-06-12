@@ -42,6 +42,7 @@ def get_produto(request: Request, id: str, token = Security(utils.api_key_scheme
 @router.post("/estoque")
 def add_estoque(produto: Produto, token = Security(utils.api_key_scheme)) -> ResProduto:
     auth_token = utils.get_auth(token)
+    produto.labels = [label.lower() for label in produto.labels]
     ret_prod = db.add_estoque(produto, auth_token)
     utils.background_job(utils.update_cluster, auth_token, db)
     return ret_prod 
@@ -49,6 +50,7 @@ def add_estoque(produto: Produto, token = Security(utils.api_key_scheme)) -> Res
 @router.put("/estoque/{id}")
 def update_estoque(produto: Produto, id: str, token = Security(utils.api_key_scheme)) -> ResProduto:
     auth_token = utils.get_auth(token)
+    produto.labels = [label.lower() for label in produto.labels]
     updated_produto = db.update_estoque(id, produto, auth_token)
     utils.background_job(utils.update_cluster, auth_token, db)
     return updated_produto 
