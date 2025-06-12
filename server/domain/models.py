@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field
+from typing import Literal
 
 class LoginRes(BaseModel):
     kind: str
@@ -20,7 +21,7 @@ class Produto(BaseModel):
 class ResProduto(BaseModel):
     id: str
     nm_produto: str
-    type_quantidade: str
+    type_quantidade: Literal["gr", "lt", "un", "kg", "ml"]
     val_quantidade: float
     labels: list[str]
     anotation: str

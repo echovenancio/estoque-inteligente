@@ -13,6 +13,7 @@ def background_job(func, *args):
     t.start()
 
 def update_cluster(auth_token: str, db: GenericDBManager):
+    print("Token for update cluster:", auth_token)
     produtos = db.get_estoque(auth_token)
     print(f"Updating cluster for {len(produtos)} products")
     if len(produtos) == 0:
