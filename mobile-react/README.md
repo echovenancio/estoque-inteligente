@@ -8,17 +8,37 @@ Use [`expo-router`](https://docs.expo.dev/router/introduction/) to build native 
 
 ## 🚀 How to use
 
-```sh
-npx create-expo-app -e with-router
+# mobile-react (Expo + TypeScript scaffold)
+
+This folder contains an Expo + TypeScript scaffold for the mobile app. I updated the project to include a small kickoff scaffold (Login screen, theme, navigation entry).
+
+Quick start (Windows PowerShell):
+
+```powershell
+cd mobile-react
+npm install
+npm run start
+# or use expo CLI: npx expo start
 ```
 
-## Deploy
+Notes:
+- The project uses Expo; the `package.json` now includes recommended dependencies. Run `npm install` to fetch them.
+- First run will install native-to-JS helper packages (react-navigation, gesture handler, etc). Follow any prompts from Expo.
 
-Deploy on all platforms with Expo Application Services (EAS).
+What I added in the kickoff step:
+- `App.tsx` — entry with a simple stack navigation and `Login` screen.
+- `src/screens/LoginScreen.tsx` — basic email/password UI (UI only).
+- `src/styles/theme.tsx` — theme provider and hook.
+- `tsconfig.json`, `.eslintrc.js`, `.prettierrc`, `babel.config.js`.
 
-- Deploy the website: `npx eas-cli deploy` — [Learn more](https://docs.expo.dev/eas/hosting/get-started/)
-- Deploy on iOS and Android using: `npx eas-cli build` — [Learn more](https://expo.dev/eas)
+Next steps:
+- Inventory Kotlin/XML files in `mobile/app/src/main` and map screens.
+- Implement Inventory list and Item detail screens.
+- Wire API using the `server/` endpoints.
 
-## 📝 Notes
+If you want I can now:
+- Run the inventory (read all layout files) and produce the screen/component mapping, or
+- Continue implementing the inventory list screen.
 
-- [Expo Router: Docs](https://docs.expo.dev/router/introduction/)
+---
+_This README was updated by the migration assistant. Replace or extend as you prefer._

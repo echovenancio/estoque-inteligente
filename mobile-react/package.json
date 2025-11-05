@@ -2,20 +2,39 @@
   "name": "mobile-react",
   "version": "1.0.0",
   "main": "expo-router/entry",
+  "private": true,
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "deploy": "npx expo export -p web && npx eas-cli@latest deploy"
+    "lint": "eslint \"src/**/*.{ts,tsx}\" --fix",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@react-native-async-storage/async-storage": "~1.21.0",
+    "@react-navigation/native": "^6.1.18",
+    "@react-navigation/native-stack": "^6.11.0",
+    "axios": "^1.7.2",
     "expo": "^54.0.1",
-    "expo-router": "~6.0.0",
-    "react": "19.1.0",
-    "react-dom": "19.1.0",
-    "react-native": "0.81.4",
-    "react-native-web": "^0.21.0"
+    "expo-router": "~3.5.14",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-native": "0.74.5",
+    "react-native-gesture-handler": "~2.16.1",
+    "react-native-safe-area-context": "~5.6.0",
+    "react-native-screens": "~4.16.0",
+    "react-native-web": "~0.19.10",
+    "undefined": "\\"
   },
-  "private": true
+  "devDependencies": {
+    "@types/react": "~18.2.45",
+    "@types/react-native": "~0.72.5",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-react": "^7.33.2",
+    "eslint-plugin-react-native": "^4.1.0",
+    "prettier": "^3.1.1",
+    "typescript": "^5.3.3"
+  }
 }
