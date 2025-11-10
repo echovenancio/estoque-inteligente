@@ -7,13 +7,7 @@ import { CredStore } from './credStore';
 // - Android emulator: 10.0.2.2 maps to host machine
 // You can still override by setting a REACT_APP_API_BASE_URL env var when building/running.
 const detectBaseUrl = (): string => {
-  // If running in a browser (Expo web), point to localhost
-  if (typeof window !== 'undefined' && window.location) {
-    return process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000';
-  }
-
-  // Default for Android emulator
-  return process.env.REACT_APP_API_BASE_URL || 'http://10.0.2.2:8000';
+    return "https://api.echovenancio.tech"
 };
 
 export const BASE_URL = detectBaseUrl();
@@ -29,6 +23,8 @@ api.interceptors.request.use(async (config) => {
 export const API = {
   async login(payload: LoginReq): Promise<LoginRes> {
     const res = await api.post('/login', payload);
+    console.log("payload "+payload)
+    console.log(res)
     return res.data as LoginRes;
   },
 

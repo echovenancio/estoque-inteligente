@@ -33,8 +33,10 @@ export const LoginScreen: React.FC = () => {
       const userEmail = (res as any).email || email;
       if (userEmail.includes('loja')) {
         router.push('/inventory');
+        await CredStore.setUserType('loja');
       } else if (userEmail.includes('fabrica')) {
-        router.push('/inventory');
+        router.push('/fabrica');
+        await CredStore.setUserType('fabrica');
       } else {
         router.push('/inventory');
       }

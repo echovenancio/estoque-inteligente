@@ -3,12 +3,17 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { ResProduto } from '../types/models';
 import { stringToThemeColors } from '../utils/colorsProvider';
 import { rgbString, useTheme } from '../styles/theme';
+import { CredStore } from '../services/credStore';
 import EditableChip from './EditableChip';
 
 type Props = {
   produto: ResProduto;
   onPress?: (p: ResProduto) => void;
 };
+
+// if the type of user is fabrica the user
+// cant edit the product from this component
+// just visualize it only loja can edit it
 
 export const ProductItem: React.FC<Props> = ({ produto, onPress }) => {
   const { colors } = useTheme();
@@ -17,6 +22,7 @@ export const ProductItem: React.FC<Props> = ({ produto, onPress }) => {
   const { bg, fg } = stringToThemeColors(label || '');
   const bgColor = rgbString(bg.red, bg.green, bg.blue);
   const fgColor = rgbString(fg.red, fg.green, fg.blue);
+
 
   return (
   <TouchableOpacity style={[styles.container, { borderBottomColor: colors.lightgrey }]} onPress={() => onPress && onPress(produto)}>

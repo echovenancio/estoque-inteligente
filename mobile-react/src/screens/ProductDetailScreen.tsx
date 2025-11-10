@@ -1,15 +1,25 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, Alert, TextInput, ScrollView } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  TouchableOpacity,
+  Alert,
+  TextInput,
+  ScrollView,
+} from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTheme } from '../styles/theme';
 import { API } from '../services/api';
 import { ResProduto } from '../types/models';
+import { CredStore } from '../services/credStore';
 import { rgbString } from '../styles/theme';
 import { stringToThemeColors } from '../utils/colorsProvider';
 import CategoryPicker from '../components/CategoryPicker';
 import EditableChip from '../components/EditableChip';
 
-export const ProductDetailScreen: React.FC = () => {
+const ProductDetailScreen: React.FC = () => {
   const params = useLocalSearchParams() as { id?: string };
   const id = params.id as string | undefined;
   const router = useRouter();
@@ -19,6 +29,7 @@ export const ProductDetailScreen: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [userType, setUserType] = useState<string | null>(null);
 
   // editable local state
   const [nameEdit, setNameEdit] = useState('');
@@ -29,6 +40,7 @@ export const ProductDetailScreen: React.FC = () => {
   const [pickerVisible, setPickerVisible] = useState(false);
   const [newFlavor, setNewFlavor] = useState('');
 
+  // load product
   useEffect(() => {
     if (!id) return;
     (async () => {
@@ -36,7 +48,6 @@ export const ProductDetailScreen: React.FC = () => {
       try {
         const p = await API.getProduct(id);
         setProduto(p);
-        // initialize edit buffers
         setNameEdit(p.nm_produto);
         setTypeEdit(p.type_quantidade || '');
         setQtyEdit(String(p.val_quantidade || 0));
@@ -51,9 +62,20 @@ export const ProductDetailScreen: React.FC = () => {
     })();
   }, [id]);
 
+  // load user type
+  useEffect(() => {
+    (async () => {
+      try {
+        const type = await CredStore.getUserType();
+        setUserType(type);
+      } catch (e) {
+        console.warn('failed to load user type', e);
+      }
+    })();
+  }, []);
+
   const onEdit = () => {
     if (!produto) return;
-    // enter inline edit mode
     setNameEdit(produto.nm_produto);
     setTypeEdit(produto.type_quantidade || '');
     setQtyEdit(String(produto.val_quantidade || 0));
@@ -63,7 +85,6 @@ export const ProductDetailScreen: React.FC = () => {
   };
 
   const onCancelEdit = () => {
-    // revert edits
     if (!produto) return setEditMode(false);
     setNameEdit(produto.nm_produto);
     setTypeEdit(produto.type_quantidade || '');
@@ -76,7 +97,8 @@ export const ProductDetailScreen: React.FC = () => {
   const onSaveEdit = async () => {
     if (!produto || !id) return;
     const n = Number(qtyEdit);
-    if (Number.isNaN(n) || n < 0) return Alert.alert('Validação', 'Quantidade inválida');
+    if (Number.isNaN(n) || n < 0)
+      return Alert.alert('Validação', 'Quantidade inválida');
     setSaving(true);
     try {
       const payload = {
@@ -87,7 +109,6 @@ export const ProductDetailScreen: React.FC = () => {
         anotation: anotationEdit || undefined,
       };
       await API.updateProduct(id, payload as any);
-      // refresh product
       const updated = await API.getProduct(id);
       setProduto(updated);
       Alert.alert('Sucesso', 'Produto atualizado');
@@ -107,7 +128,8 @@ export const ProductDetailScreen: React.FC = () => {
     setNewFlavor('');
   };
 
-  const onRemoveFlavor = (f: string) => setLabelsEdit((s) => s.filter((x) => x !== f));
+  const onRemoveFlavor = (f: string) =>
+    setLabelsEdit((s) => s.filter((x) => x !== f));
 
   const onDelete = () => {
     if (!id) return;
@@ -117,7 +139,7 @@ export const ProductDetailScreen: React.FC = () => {
         text: 'Remover',
         style: 'destructive',
         onPress: async () => {
-            try {
+          try {
             await API.deleteProduct(id);
             router.replace('/inventory?refresh=1');
           } catch (e: any) {
@@ -129,26 +151,96 @@ export const ProductDetailScreen: React.FC = () => {
     ]);
   };
 
-  if (loading) return <ActivityIndicator />;
+  if (loading || !userType) return <ActivityIndicator />;
 
-  if (!produto) return (
-    <View style={styles.container}>
-      <Text>Produto não encontrado.</Text>
-    </View>
-  );
+  if (!produto)
+    return (
+      <View style={styles.container}>
+        <Text>Produto não encontrado.</Text>
+      </View>
+    );
 
+  // fabrica = read-only view
+  if (userType === 'fabrica') {
+    return (
+      <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.background }]}>
+        <View style={styles.headerRow}>
+          <Text style={[styles.title, { color: colors.primary }]}>
+            {produto.nm_produto}
+          </Text>
+          <View style={styles.tagWrap}>
+            {(() => {
+              const label =
+                produto.best_describer || produto.labels?.[0] || 'Sem categoria';
+              const { bg, fg } = stringToThemeColors(label || '');
+              const bgColor = rgbString(bg.red, bg.green, bg.blue);
+              const fgColor = rgbString(fg.red, fg.green, fg.blue);
+              return (
+                <View style={[styles.categoryPill, { backgroundColor: bgColor }]}>
+                  <Text style={[styles.categoryText, { color: fgColor }]}>
+                    {label}
+                  </Text>
+                </View>
+              );
+            })()}
+          </View>
+        </View>
+
+        <View style={[styles.card, { backgroundColor: colors.card }]}>
+          <Text style={[styles.cardLabel, { color: colors.text }]}>Quantidade</Text>
+          <Text style={[styles.cardValue, { color: colors.primary }]}>
+            {produto.val_quantidade} {produto.type_quantidade || ''}
+          </Text>
+        </View>
+
+        <View style={[styles.card, { backgroundColor: colors.card }]}>
+          <Text style={[styles.cardLabel, { color: colors.text }]}>Referência</Text>
+          <Text style={[styles.cardValue, { color: colors.text }]}>
+            {produto.type_quantidade || '-'}
+          </Text>
+        </View>
+
+        <View style={[styles.card, { backgroundColor: colors.card }]}>
+          <Text style={[styles.cardLabel, { color: colors.text }]}>Anotações</Text>
+          <Text style={[styles.cardValue, { color: colors.text }]}>
+            {produto.anotation || '—'}
+          </Text>
+        </View>
+
+        <View style={{ marginTop: 12 }}>
+          <Text style={{ color: colors.text, marginBottom: 8 }}>Sabores</Text>
+          <View style={styles.flavorsWrap}>
+            {produto.labels?.map((l) => (
+              <EditableChip key={l} label={l} />
+            ))}
+          </View>
+        </View>
+      </ScrollView>
+    );
+  }
+
+  // loja = editable view
   return (
-    <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.background }]}> 
+    <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.headerRow}>
         {editMode ? (
-          <TextInput value={nameEdit} onChangeText={setNameEdit} style={[styles.titleInput, { color: colors.primary }]} />
+          <TextInput
+            value={nameEdit}
+            onChangeText={setNameEdit}
+            style={[styles.titleInput, { color: colors.primary }]}
+          />
         ) : (
-          <Text style={[styles.title, { color: colors.primary }]}>{produto.nm_produto}</Text>
+          <Text style={[styles.title, { color: colors.primary }]}>
+            {produto.nm_produto}
+          </Text>
         )}
 
         <View style={styles.tagWrap}>
           {(() => {
-            const label = (editMode ? labelsEdit[0] : produto.best_describer) || (editMode ? labelsEdit[0] : produto.labels?.[0]) || 'Sem categoria';
+            const label =
+              (editMode ? labelsEdit[0] : produto.best_describer) ||
+              (editMode ? labelsEdit[0] : produto.labels?.[0]) ||
+              'Sem categoria';
             const { bg, fg } = stringToThemeColors(label || '');
             const bgColor = rgbString(bg.red, bg.green, bg.blue);
             const fgColor = rgbString(fg.red, fg.green, fg.blue);
@@ -161,30 +253,50 @@ export const ProductDetailScreen: React.FC = () => {
         </View>
       </View>
 
-      <View style={[styles.card, { backgroundColor: colors.card }]}> 
+      <View style={[styles.card, { backgroundColor: colors.card }]}>
         <Text style={[styles.cardLabel, { color: colors.text }]}>Quantidade</Text>
         {editMode ? (
-          <TextInput value={qtyEdit} onChangeText={setQtyEdit} keyboardType="numeric" style={[styles.cardValueInput, { color: colors.primary }]} />
+          <TextInput
+            value={qtyEdit}
+            onChangeText={setQtyEdit}
+            keyboardType="numeric"
+            style={[styles.cardValueInput, { color: colors.primary }]}
+          />
         ) : (
-          <Text style={[styles.cardValue, { color: colors.primary }]}>{produto.val_quantidade} {produto.type_quantidade || ''}</Text>
+          <Text style={[styles.cardValue, { color: colors.primary }]}>
+            {produto.val_quantidade} {produto.type_quantidade || ''}
+          </Text>
         )}
       </View>
 
-      <View style={[styles.card, { backgroundColor: colors.card }]}> 
+      <View style={[styles.card, { backgroundColor: colors.card }]}>
         <Text style={[styles.cardLabel, { color: colors.text }]}>Referência</Text>
         {editMode ? (
-          <TextInput value={typeEdit} onChangeText={setTypeEdit} style={[styles.cardValueInput, { color: colors.text }]} />
+          <TextInput
+            value={typeEdit}
+            onChangeText={setTypeEdit}
+            style={[styles.cardValueInput, { color: colors.text }]}
+          />
         ) : (
-          <Text style={[styles.cardValue, { color: colors.text }]}>{produto.type_quantidade || '-'}</Text>
+          <Text style={[styles.cardValue, { color: colors.text }]}>
+            {produto.type_quantidade || '-'}
+          </Text>
         )}
       </View>
 
-      <View style={[styles.card, { backgroundColor: colors.card }]}> 
+      <View style={[styles.card, { backgroundColor: colors.card }]}>
         <Text style={[styles.cardLabel, { color: colors.text }]}>Anotações</Text>
         {editMode ? (
-          <TextInput value={anotationEdit} onChangeText={setAnotationEdit} multiline style={[styles.anotationInput, { color: colors.text }]} />
+          <TextInput
+            value={anotationEdit}
+            onChangeText={setAnotationEdit}
+            multiline
+            style={[styles.anotationInput, { color: colors.text }]}
+          />
         ) : (
-          <Text style={[styles.cardValue, { color: colors.text }]}>{produto.anotation || '—'}</Text>
+          <Text style={[styles.cardValue, { color: colors.text }]}>
+            {produto.anotation || '—'}
+          </Text>
         )}
       </View>
 
@@ -192,43 +304,68 @@ export const ProductDetailScreen: React.FC = () => {
         <Text style={{ color: colors.text, marginBottom: 8 }}>Sabores</Text>
         <View style={styles.flavorsWrap}>
           {(editMode ? labelsEdit : produto.labels || []).map((l) => (
-            <EditableChip key={l} label={l} onRemove={editMode ? () => onRemoveFlavor(l) : undefined} />
+            <EditableChip
+              key={l}
+              label={l}
+              onRemove={editMode ? () => onRemoveFlavor(l) : undefined}
+            />
           ))}
         </View>
 
-        {editMode ? (
+        {editMode && (
           <View style={{ flexDirection: 'row', marginTop: 8, alignItems: 'center' }}>
-            <EditableChip isInput value={newFlavor} onChange={setNewFlavor} placeholder="Adicionar sabor" />
-            <TouchableOpacity onPress={onAddFlavor} style={[styles.addFlavorBtn, { backgroundColor: colors.primary }]}>
+            <EditableChip
+              isInput
+              value={newFlavor}
+              onChange={setNewFlavor}
+              placeholder="Adicionar sabor"
+            />
+            <TouchableOpacity
+              onPress={onAddFlavor}
+              style={[styles.addFlavorBtn, { backgroundColor: colors.primary }]}
+            >
               <Text style={{ color: colors.onPrimary }}>Adicionar</Text>
             </TouchableOpacity>
           </View>
-        ) : null}
+        )}
       </View>
 
       <View style={styles.actions}>
         {editMode ? (
           <>
-            <TouchableOpacity style={[styles.button, { backgroundColor: colors.primary }]} onPress={onSaveEdit} disabled={saving}>
-              <Text style={[styles.buttonText, { color: colors.onPrimary }]}>{saving ? 'Salvando...' : 'Salvar'}</Text>
+            <TouchableOpacity
+              style={[styles.button, { backgroundColor: colors.primary }]}
+              onPress={onSaveEdit}
+              disabled={saving}
+            >
+              <Text style={[styles.buttonText, { color: colors.onPrimary }]}>
+                {saving ? 'Salvando...' : 'Salvar'}
+              </Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.deleteButton]} onPress={onCancelEdit}>
+            <TouchableOpacity style={styles.deleteButton} onPress={onCancelEdit}>
               <Text style={styles.deleteText}>Cancelar</Text>
             </TouchableOpacity>
           </>
         ) : (
           <>
-            <TouchableOpacity style={[styles.button, { backgroundColor: colors.primary }]} onPress={onEdit}>
+            <TouchableOpacity
+              style={[styles.button, { backgroundColor: colors.primary }]}
+              onPress={onEdit}
+            >
               <Text style={[styles.buttonText, { color: colors.onPrimary }]}>Editar</Text>
             </TouchableOpacity>
-
-            <TouchableOpacity style={[styles.deleteButton]} onPress={onDelete}>
+            <TouchableOpacity style={styles.deleteButton} onPress={onDelete}>
               <Text style={styles.deleteText}>Remover</Text>
             </TouchableOpacity>
           </>
         )}
       </View>
-      <CategoryPicker visible={pickerVisible} initial={labelsEdit} onClose={() => setPickerVisible(false)} onConfirm={(sel) => setLabelsEdit(sel)} />
+      <CategoryPicker
+        visible={pickerVisible}
+        initial={labelsEdit}
+        onClose={() => setPickerVisible(false)}
+        onConfirm={(sel) => setLabelsEdit(sel)}
+      />
     </ScrollView>
   );
 };
@@ -236,7 +373,8 @@ export const ProductDetailScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16 },
   title: { fontSize: 22, fontWeight: '700', marginBottom: 12 },
-  row: { marginBottom: 8 },
+  headerRow: { marginBottom: 8 },
+  tagWrap: { marginLeft: 8 },
   actions: { flexDirection: 'row', marginTop: 20, alignItems: 'center' },
   button: { paddingVertical: 10, paddingHorizontal: 16, borderRadius: 6, marginRight: 12 },
   buttonText: { fontWeight: '600' },
@@ -245,3 +383,4 @@ const styles = StyleSheet.create({
 });
 
 export default ProductDetailScreen;
+
