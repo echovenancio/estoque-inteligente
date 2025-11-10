@@ -2,15 +2,20 @@ import axios from 'axios';
 import { LoginReq, LoginRes, Produto, ResProduto } from '../types/models';
 import { CredStore } from './credStore';
 
-// Select sensible default baseURL depending on platform.
-// - Web: use localhost so the browser can reach the local FastAPI dev server
-// - Android emulator: 10.0.2.2 maps to host machine
-// You can still override by setting a REACT_APP_API_BASE_URL env var when building/running.
-const detectBaseUrl = (): string => {
-    return "https://api.echovenancio.tech"
+// Get API URL from environment variable
+const getBaseUrl = (): string => {
+  const apiUrl = process.env.EXPO_PUBLIC_API_URL;
+  
+  if (!apiUrl) {
+    throw new Error(
+      'EXPO_PUBLIC_API_URL is not defined. Please set it in your .env file.'
+    );
+  }
+  
+  return apiUrl;
 };
 
-export const BASE_URL = detectBaseUrl();
+export const BASE_URL = getBaseUrl();
 const api = axios.create({ baseURL: `${BASE_URL}/v1`, timeout: 10000 });
 
 // Attach token when present

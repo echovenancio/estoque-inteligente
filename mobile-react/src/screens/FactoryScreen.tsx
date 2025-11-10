@@ -1,6 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
-import { useTheme } from '../styles/theme';
+import { View, StyleSheet } from 'react-native';
+import {
+  Text,
+  Searchbar,
+  Appbar,
+  Surface,
+  useTheme,
+  ActivityIndicator,
+  Chip
+} from 'react-native-paper';
 import { ProductList } from '../components/ProductList';
 import { API } from '../services/api';
 import { ResProduto } from '../types/models';
@@ -8,7 +16,7 @@ import { useRouter } from 'expo-router';
 import { CredStore } from '../services/credStore';
 
 const FactoryScreen: React.FC = () => {
-  const { colors } = useTheme();
+  const theme = useTheme();
   const router = useRouter();
   const [produtos, setProdutos] = useState<ResProduto[]>([]);
   const [loading, setLoading] = useState(false);
@@ -47,35 +55,85 @@ const FactoryScreen: React.FC = () => {
     }
   };
 
+  const onLogout = async () => {
+    await CredStore.removeToken();
+    router.replace('/login');
+  };
+
   const filtered = produtos.filter((p) => p.nm_produto.toLowerCase().includes(query.toLowerCase()));
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}> 
-      <View style={styles.headerRow}>
-        <Text style={[styles.title, { color: colors.primary }]}>Bem vindo, Fabrica! 🏭</Text>
-        <TouchableOpacity onPress={() => router.push('/inventory')} style={styles.link}>
-          <Text style={{ color: colors.primary }}>Estoque</Text>
-        </TouchableOpacity>
+    <Surface style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <Appbar.Header elevated>
+        <Appbar.Content title="Fábrica" />
+        <Appbar.Action icon="logout" onPress={onLogout} />
+      </Appbar.Header>
+
+      <View style={styles.content}>
+        <View style={styles.headerContainer}>
+          <Text variant="headlineMedium" style={{ color: theme.colors.primary, marginBottom: 8 }}>
+            Bem-vindo, Fábrica! 🏭
+          </Text>
+          <Chip icon="eye" mode="outlined" style={styles.chip}>
+            Modo somente leitura
+          </Chip>
+        </View>
+
+        <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant, marginBottom: 16 }}>
+          Clique em um produto para visualizar detalhes
+        </Text>
+
+        <Searchbar
+          placeholder="Procurar produto"
+          onChangeText={setQuery}
+          value={query}
+          style={styles.searchBar}
+          elevation={2}
+        />
+
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" />
+            <Text variant="bodyMedium" style={{ marginTop: 16 }}>
+              Carregando produtos...
+            </Text>
+          </View>
+        ) : (
+          <ProductList
+            produtos={filtered}
+            onItemPress={(p) => router.push(`/inventory/${p.id}`)}
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+          />
+        )}
       </View>
-
-      <Text style={{ color: colors.text, marginBottom: 8 }}>Clique em um produto para visualizar</Text>
-
-      <View style={[styles.searchBox, { backgroundColor: colors.card, borderColor: colors.border }]}> 
-        <TextInput placeholder="Procurar produto" placeholderTextColor={colors.placeholder} value={query} onChangeText={setQuery} style={{ flex: 1, color: colors.text }} />
-      </View>
-
-      {loading ? <ActivityIndicator /> : <ProductList produtos={filtered} onItemPress={(p) => router.push(`/inventory/${p.id}`)} refreshing={refreshing} onRefresh={onRefresh} />}
-
-    </View>
+    </Surface>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16 },
-  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
-  title: { fontSize: 20, fontWeight: '700' },
-  link: { padding: 8 },
-  searchBox: { height: 48, borderWidth: 1, borderRadius: 24, paddingHorizontal: 12, marginBottom: 12, justifyContent: 'center' },
+  container: {
+    flex: 1,
+  },
+  content: {
+    flex: 1,
+    padding: 16,
+  },
+  headerContainer: {
+    marginBottom: 16,
+  },
+  chip: {
+    alignSelf: 'flex-start',
+    marginTop: 8,
+  },
+  searchBar: {
+    marginBottom: 16,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 });
 
 export default FactoryScreen;

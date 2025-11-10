@@ -1,15 +1,26 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, Alert } from 'react-native';
+import { View, ScrollView, StyleSheet } from 'react-native';
+import {
+  Text,
+  TextInput,
+  Button,
+  Card,
+  Appbar,
+  Surface,
+  useTheme,
+  ActivityIndicator,
+  Chip,
+  Snackbar,
+  Divider
+} from 'react-native-paper';
 import { useRouter } from 'expo-router';
-import { useTheme } from '../styles/theme';
 import { API } from '../services/api';
 import { ResProduto, Produto } from '../types/models';
 import CategoryPicker from '../components/CategoryPicker';
-import EditableChip from '../components/EditableChip';
 
 export const ProductFormScreen: React.FC<{ id?: string }> = ({ id }) => {
   const router = useRouter();
-  const { colors } = useTheme();
+  const theme = useTheme();
 
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -19,8 +30,10 @@ export const ProductFormScreen: React.FC<{ id?: string }> = ({ id }) => {
   const [qty, setQty] = useState<string>('0');
   const [labels, setLabels] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [newTagInput, setNewTagInput] = useState('');
   const [pickerVisible, setPickerVisible] = useState(false);
   const [notes, setNotes] = useState('');
+  const [error, setError] = useState('');
 
   useEffect(() => {
     if (id) {
@@ -36,7 +49,7 @@ export const ProductFormScreen: React.FC<{ id?: string }> = ({ id }) => {
           setNotes(p.anotation || '');
         } catch (e: any) {
           console.warn('load product', e);
-          Alert.alert('Erro', 'Não foi possível carregar o produto');
+          setError('Não foi possível carregar o produto');
         } finally {
           setLoading(false);
         }
@@ -48,22 +61,26 @@ export const ProductFormScreen: React.FC<{ id?: string }> = ({ id }) => {
     if (!name.trim()) return 'Nome do produto é obrigatório';
     const n = Number(qty);
     if (Number.isNaN(n) || n < 0) return 'Quantidade inválida';
+    if (selectedTags.length === 0) return 'Selecione pelo menos uma categoria';
     return null;
   };
-
-  // keep labels string and selectedTags array in sync
-  useEffect(() => {
-    setSelectedTags(labels ? labels.split(',').map((s) => s.trim()).filter(Boolean) : []);
-  }, []);
 
   useEffect(() => {
     setLabels(selectedTags.join(', '));
   }, [selectedTags]);
 
+  const addNewTag = () => {
+    const trimmed = newTagInput.trim();
+    if (trimmed && !selectedTags.includes(trimmed)) {
+      setSelectedTags([...selectedTags, trimmed]);
+      setNewTagInput('');
+    }
+  };
+
   const onSave = async () => {
     const v = validate();
     if (v) {
-      Alert.alert('Validação', v);
+      setError(v);
       return;
     }
     setSaving(true);
@@ -78,70 +95,233 @@ export const ProductFormScreen: React.FC<{ id?: string }> = ({ id }) => {
     try {
       if (id) {
         await API.updateProduct(id as string, payload);
-        Alert.alert('Sucesso', 'Produto atualizado');
+        setError('');
+        router.replace('/loja?refresh=1');
       } else {
         await API.addProduct(payload);
-        Alert.alert('Sucesso', 'Produto adicionado');
+        setError('');
+        router.replace('/loja?refresh=1');
       }
-  router.replace('/inventory?refresh=1');
     } catch (e: any) {
       console.warn('save product', e);
-      Alert.alert('Erro', e?.response?.data?.message || 'Erro ao salvar produto');
+      setError(e?.response?.data?.message || 'Erro ao salvar produto');
     } finally {
       setSaving(false);
     }
   };
 
-  if (loading) return <ActivityIndicator />;
+  if (loading) {
+    return (
+      <Surface style={[styles.container, { backgroundColor: theme.colors.background }]}>
+        <Appbar.Header elevated>
+          <Appbar.BackAction onPress={() => router.back()} />
+          <Appbar.Content title="Carregando..." />
+        </Appbar.Header>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" />
+        </View>
+      </Surface>
+    );
+  }
 
   return (
-    <ScrollView contentContainerStyle={{ padding: 16 }}>
-      <View style={[styles.card, { backgroundColor: colors.card }]}>
-        <Text style={[styles.title, { color: colors.primary }]}>{id ? 'Editar produto' : 'Adicionar produto'}</Text>
+    <Surface style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <Appbar.Header elevated>
+        <Appbar.BackAction onPress={() => router.back()} />
+        <Appbar.Content title={id ? 'Editar Produto' : 'Adicionar Produto'} />
+        <Appbar.Action icon="check" onPress={onSave} disabled={saving} />
+      </Appbar.Header>
 
-        <Text style={styles.label}>Nome</Text>
-        <TextInput value={name} onChangeText={setName} style={[styles.input, { borderColor: colors.border }]} />
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <Card style={styles.card} elevation={2}>
+          <Card.Content>
+            <Text variant="titleLarge" style={{ color: theme.colors.primary, marginBottom: 16 }}>
+              Informações do Produto
+            </Text>
 
-        <Text style={styles.label}>Unidade (ex: un, kg, lt)</Text>
-        <TextInput value={unit} onChangeText={setUnit} style={[styles.input, { borderColor: colors.border }]} />
+            <TextInput
+              label="Nome do produto *"
+              value={name}
+              onChangeText={setName}
+              mode="outlined"
+              style={styles.input}
+              left={<TextInput.Icon icon="package-variant" />}
+              error={!!error && !name.trim()}
+            />
 
-        <Text style={styles.label}>Quantidade</Text>
-        <TextInput value={qty} onChangeText={setQty} keyboardType="numeric" style={[styles.input, { borderColor: colors.border }]} />
+            <View style={styles.row}>
+              <TextInput
+                label="Unidade"
+                value={unit}
+                onChangeText={setUnit}
+                mode="outlined"
+                style={[styles.input, styles.halfInput]}
+                placeholder="un, kg, lt"
+                left={<TextInput.Icon icon="ruler" />}
+              />
 
-        <Text style={styles.label}>Tags (separe por vírgula)</Text>
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <TouchableOpacity onPress={() => setPickerVisible(true)} style={[styles.pickerButton, { backgroundColor: colors.card }]}> 
-            <Text style={{ color: colors.text }}>Selecionar tags</Text>
-          </TouchableOpacity>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingVertical: 4 }}> 
-            {selectedTags.map((t) => (
-              <EditableChip key={t} label={t} onRemove={() => setSelectedTags((s) => s.filter((x) => x !== t))} />
-            ))}
-          </ScrollView>
-        </View>
-        <TextInput value={labels} onChangeText={(v: string) => { setLabels(v); setSelectedTags(v ? v.split(',').map((s: string) => s.trim()).filter(Boolean) : []); }} style={[styles.input, { borderColor: colors.border }]} />
+              <TextInput
+                label="Quantidade *"
+                value={qty}
+                onChangeText={setQty}
+                keyboardType="numeric"
+                mode="outlined"
+                style={[styles.input, styles.halfInput]}
+                left={<TextInput.Icon icon="counter" />}
+                error={!!error && Number.isNaN(Number(qty))}
+              />
+            </View>
 
-        <Text style={styles.label}>Observações</Text>
-        <TextInput value={notes} onChangeText={setNotes} style={[styles.input, { borderColor: colors.border }]} multiline />
+            <Divider style={styles.divider} />
 
-        <TouchableOpacity style={[styles.button, { backgroundColor: colors.primary }]} onPress={onSave} disabled={saving}>
-          <Text style={[styles.buttonText, { color: colors.onPrimary }]}>{saving ? 'Salvando...' : 'Salvar'}</Text>
-        </TouchableOpacity>
-        <CategoryPicker visible={pickerVisible} initial={selectedTags} onClose={() => setPickerVisible(false)} onConfirm={(sel) => setSelectedTags(sel)} />
-      </View>
-    </ScrollView>
+            <Text variant="titleMedium" style={{ marginBottom: 12 }}>
+              Categorias
+            </Text>
+
+            <Button
+              mode="outlined"
+              onPress={() => setPickerVisible(true)}
+              icon="tag-multiple"
+              style={styles.categoryButton}
+            >
+              Selecionar categorias
+            </Button>
+
+            <View style={styles.row}>
+              <TextInput
+                label="Nova categoria"
+                value={newTagInput}
+                onChangeText={setNewTagInput}
+                mode="outlined"
+                style={[styles.input, { flex: 1, marginRight: 8 }]}
+                placeholder="Digite e pressione +"
+                left={<TextInput.Icon icon="tag-plus" />}
+                onSubmitEditing={addNewTag}
+              />
+              <Button
+                mode="contained"
+                onPress={addNewTag}
+                disabled={!newTagInput.trim()}
+                style={{ height: 56, justifyContent: 'center' }}
+                contentStyle={{ height: 56 }}
+                icon="plus"
+              >
+                Adicionar
+              </Button>
+            </View>
+
+            {selectedTags.length > 0 && (
+              <View style={styles.chipContainer}>
+                {selectedTags.map((t) => (
+                  <Chip
+                    key={t}
+                    mode="flat"
+                    onClose={() => setSelectedTags((s) => s.filter((x) => x !== t))}
+                    style={styles.chip}
+                  >
+                    {t}
+                  </Chip>
+                ))}
+              </View>
+            )}
+
+            <Divider style={styles.divider} />
+
+            <TextInput
+              label="Observações"
+              value={notes}
+              onChangeText={setNotes}
+              mode="outlined"
+              multiline
+              numberOfLines={4}
+              style={styles.input}
+              left={<TextInput.Icon icon="note-text" />}
+            />
+
+            <Button
+              mode="contained"
+              onPress={onSave}
+              loading={saving}
+              disabled={saving}
+              style={styles.saveButton}
+              contentStyle={styles.saveButtonContent}
+              icon="content-save"
+            >
+              {saving ? 'Salvando...' : 'Salvar Produto'}
+            </Button>
+          </Card.Content>
+        </Card>
+      </ScrollView>
+
+      <CategoryPicker
+        visible={pickerVisible}
+        initial={selectedTags}
+        onClose={() => setPickerVisible(false)}
+        onConfirm={(sel) => setSelectedTags(sel)}
+      />
+
+      <Snackbar
+        visible={!!error}
+        onDismiss={() => setError('')}
+        duration={4000}
+        action={{
+          label: 'Fechar',
+          onPress: () => setError(''),
+        }}
+      >
+        {error}
+      </Snackbar>
+    </Surface>
   );
 };
 
 const styles = StyleSheet.create({
-  card: { padding: 16, borderRadius: 8 },
-  title: { fontSize: 20, fontWeight: '700', marginBottom: 12 },
-  label: { marginTop: 8, marginBottom: 4, color: '#333' },
-  input: { height: 44, borderWidth: 1, borderRadius: 6, paddingHorizontal: 8 },
-  button: { height: 48, borderRadius: 6, alignItems: 'center', justifyContent: 'center', marginTop: 12 },
-  buttonText: { fontWeight: '600' },
-  pickerButton: { padding: 8, borderRadius: 6, marginRight: 8 },
-  
+  container: {
+    flex: 1,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  scrollContent: {
+    padding: 16,
+  },
+  card: {
+    marginBottom: 16,
+  },
+  input: {
+    marginBottom: 16,
+  },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  halfInput: {
+    flex: 1,
+  },
+  divider: {
+    marginVertical: 16,
+  },
+  categoryButton: {
+    marginBottom: 12,
+  },
+  chipContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  chip: {
+    marginRight: 4,
+    marginBottom: 8,
+  },
+  saveButton: {
+    marginTop: 16,
+  },
+  saveButtonContent: {
+    paddingVertical: 8,
+  },
 });
 
 export default ProductFormScreen;

@@ -1,11 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
-import { useTheme } from '../styles/theme';
-import { adicionar } from '../assets';
-// runtime-safe Image import (require) to avoid types mismatch in this workspace
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-const Image: any = require('react-native').Image;
+import { View, StyleSheet } from 'react-native';
+import {
+  Text,
+  Searchbar,
+  FAB,
+  Appbar,
+  Surface,
+  useTheme,
+  ActivityIndicator,
+  Portal,
+  Chip
+} from 'react-native-paper';
 import { ProductList } from '../components/ProductList';
 import { API } from '../services/api';
 import { ResProduto } from '../types/models';
@@ -13,7 +18,7 @@ import { useRouter } from 'expo-router';
 import { CredStore } from '../services/credStore';
 
 const ShopScreen: React.FC = () => {
-  const { colors } = useTheme();
+  const theme = useTheme();
   const router = useRouter();
   const [produtos, setProdutos] = useState<ResProduto[]>([]);
   const [loading, setLoading] = useState(false);
@@ -52,40 +57,100 @@ const ShopScreen: React.FC = () => {
     }
   };
 
+  const onLogout = async () => {
+    await CredStore.removeToken();
+    router.replace('/login');
+  };
+
   const filtered = produtos.filter((p) => p.nm_produto.toLowerCase().includes(query.toLowerCase()));
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}> 
-      <View style={styles.headerRow}>
-        <Text style={[styles.title, { color: colors.primary }]}>Bem vindo, Loja! 🍰</Text>
-        <TouchableOpacity onPress={() => router.push('/inventory')} style={styles.link}>
-          <Text style={{ color: colors.primary }}>Estoque</Text>
-        </TouchableOpacity>
+    <Surface style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <Appbar.Header elevated>
+        <Appbar.Content title="Loja 🍰" />
+        <Appbar.Action icon="logout" onPress={onLogout} />
+      </Appbar.Header>
+
+      <View style={styles.content}>
+        <View style={styles.headerContainer}>
+          <Text variant="headlineMedium" style={{ color: theme.colors.primary, marginBottom: 8 }}>
+            Bem-vindo, Loja! 🍰
+          </Text>
+          <Chip icon="store" mode="outlined" style={styles.chip}>
+            Modo completo
+          </Chip>
+        </View>
+
+        <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant, marginBottom: 16 }}>
+          Clique em um produto para visualizar ou editar
+        </Text>
+
+        <Searchbar
+          placeholder="Procurar produto"
+          onChangeText={setQuery}
+          value={query}
+          style={styles.searchBar}
+          elevation={2}
+        />
+
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" />
+            <Text variant="bodyMedium" style={{ marginTop: 16 }}>
+              Carregando produtos...
+            </Text>
+          </View>
+        ) : (
+          <ProductList
+            produtos={filtered}
+            onItemPress={(p) => router.push(`/inventory/${p.id}`)}
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+          />
+        )}
+
+        <Portal>
+          <FAB
+            icon="plus"
+            style={[styles.fab, { backgroundColor: theme.colors.primary }]}
+            onPress={() => router.push('/inventory/add')}
+            label="Adicionar"
+            color="#FFFFFF"
+          />
+        </Portal>
       </View>
-
-      <Text style={{ color: colors.text, marginBottom: 8 }}>Clique em um produto para visualizar</Text>
-
-      <View style={[styles.searchBox, { backgroundColor: colors.card, borderColor: colors.border }]}> 
-        <TextInput placeholder="Procurar produto" placeholderTextColor={colors.placeholder} value={query} onChangeText={setQuery} style={{ flex: 1, color: colors.text }} />
-      </View>
-
-      {loading ? <ActivityIndicator /> : <ProductList produtos={filtered} onItemPress={(p) => router.push(`/inventory/${p.id}`)} refreshing={refreshing} onRefresh={onRefresh} />}
-
-      <TouchableOpacity style={[styles.fab, { backgroundColor: colors.primary }]} onPress={() => router.push('/inventory/add')}>
-  <Image source={adicionar} style={styles.fabIcon} resizeMode="contain" />
-      </TouchableOpacity>
-    </View>
+    </Surface>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16 },
-  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
-  title: { fontSize: 20, fontWeight: '700' },
-  link: { padding: 8 },
-  searchBox: { height: 48, borderWidth: 1, borderRadius: 24, paddingHorizontal: 12, marginBottom: 12, justifyContent: 'center' },
-  fab: { position: 'absolute', right: 20, bottom: 30, width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', elevation: 4 },
-  fabIcon: { width: 28, height: 28 },
+  container: {
+    flex: 1,
+  },
+  content: {
+    flex: 1,
+    padding: 16,
+  },
+  headerContainer: {
+    marginBottom: 16,
+  },
+  chip: {
+    alignSelf: 'flex-start',
+    marginTop: 8,
+  },
+  searchBar: {
+    marginBottom: 16,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  fab: {
+    position: 'absolute',
+    right: 16,
+    bottom: 16,
+  },
 });
 
 export default ShopScreen;
