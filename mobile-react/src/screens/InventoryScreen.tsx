@@ -2,13 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import {
   Text,
-  FAB,
   Appbar,
   Surface,
   useTheme,
   ActivityIndicator,
   Snackbar,
-  Portal,
   Button
 } from 'react-native-paper';
 import { ProductList } from '../components/ProductList';
@@ -72,7 +70,7 @@ export const InventoryScreen: React.FC = () => {
     try {
       const data = await API.getInventory();
       setProdutos(data);
-    } catch (e: any) {
+    } catch (e) {
       console.warn('refresh error', e);
     } finally {
       setRefreshing(false);
@@ -81,12 +79,20 @@ export const InventoryScreen: React.FC = () => {
 
   useEffect(() => {
     // Check authentication; if no token, go to login
+    // If user is 'loja', redirect to /loja instead
     (async () => {
       const token = await CredStore.getToken();
       if (!token) {
         router.replace('/login');
         return;
       }
+
+      const userType = await CredStore.getUserType();
+      if (userType === 'loja') {
+        router.replace('/loja');
+        return;
+      }
+
       fetchInventory();
     })();
   }, []);
@@ -115,6 +121,11 @@ export const InventoryScreen: React.FC = () => {
     <Surface style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <Appbar.Header elevated>
         <Appbar.Content title="Estoque" />
+        <Appbar.Action 
+          icon="alert-circle" 
+          onPress={() => router.push('/inventory/low-stock')}
+          iconColor="#d84315"
+        />
         <Appbar.Action icon="logout" onPress={onLogout} />
       </Appbar.Header>
 

@@ -62,4 +62,9 @@ export const API = {
     const res = await api.get('/categorias');
     return res.data as string[];
   },
+
+  async getLowStockProducts(): Promise<ResProduto[]> {
+    const res = await api.get('/estoque/low-stock');
+    return res.data as ResProduto[];
+  },
 };

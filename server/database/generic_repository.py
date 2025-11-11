@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from domain.models import LoginRes, ResProduto, Produto
 
+
 class GenericDBManager(ABC):
     @abstractmethod
     def login(self, email, password) -> LoginRes:
@@ -36,4 +37,8 @@ class GenericDBManager(ABC):
 
     @abstractmethod
     def delete_produto(self, id, auth_token) -> bool:
+        pass
+
+    @abstractmethod
+    def get_low_stock_produtos(self, auth_token) -> list[ResProduto]:
         pass

@@ -13,6 +13,7 @@ export interface ResProduto {
   nm_produto: string;
   type_quantidade?: string | null;
   val_quantidade: number;
+  min_quantity?: number; // ⭐ NOVO: Quantidade mínima (threshold)
   labels: string[];
   best_describer: string;
   anotation?: string | null;
@@ -25,6 +26,7 @@ export interface Produto {
   nm_produto: string;
   type_quantidade?: string | null;
   val_quantidade: number;
+  min_quantity?: number; // ⭐ NOVO: Quantidade mínima (threshold)
   labels: string[];
   anotation?: string | null;
 }

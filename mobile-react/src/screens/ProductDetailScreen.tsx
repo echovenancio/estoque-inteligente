@@ -147,6 +147,32 @@ const ProductDetailScreen: React.FC = () => {
               </Text>
             </View>
 
+            {(produto.min_quantity !== undefined && produto.min_quantity > 0) && (
+              <>
+                <Divider style={styles.divider} />
+                <View style={styles.infoRow}>
+                  <Text variant="titleMedium" style={styles.infoLabel}>
+                    Quantidade Mínima
+                  </Text>
+                  <View style={styles.minQtyRow}>
+                    <Text variant="bodyLarge" style={{ marginRight: 8 }}>
+                      {produto.min_quantity} {produto.type_quantidade || 'un'}
+                    </Text>
+                    {produto.val_quantidade < produto.min_quantity && (
+                      <Chip
+                        icon="alert-circle"
+                        mode="flat"
+                        style={{ backgroundColor: '#ffebee' }}
+                        textStyle={{ color: '#c62828' }}
+                      >
+                        Baixo estoque!
+                      </Chip>
+                    )}
+                  </View>
+                </View>
+              </>
+            )}
+
             <Divider style={styles.divider} />
 
             <View style={styles.infoRow}>
@@ -279,6 +305,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  minQtyRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   infoSection: {
     marginTop: 8,

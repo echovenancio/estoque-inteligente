@@ -28,6 +28,7 @@ export const ProductFormScreen: React.FC<{ id?: string }> = ({ id }) => {
   const [name, setName] = useState('');
   const [unit, setUnit] = useState('');
   const [qty, setQty] = useState<string>('0');
+  const [minQty, setMinQty] = useState<string>('0'); // ⭐ NOVO
   const [labels, setLabels] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [newTagInput, setNewTagInput] = useState('');
@@ -44,6 +45,7 @@ export const ProductFormScreen: React.FC<{ id?: string }> = ({ id }) => {
           setName(p.nm_produto);
           setUnit(p.type_quantidade || '');
           setQty(String(p.val_quantidade || 0));
+          setMinQty(String(p.min_quantity || 0)); // ⭐ NOVO
           setLabels((p.labels || []).join(', '));
           setSelectedTags((p.labels || []).map((s) => s));
           setNotes(p.anotation || '');
@@ -88,6 +90,7 @@ export const ProductFormScreen: React.FC<{ id?: string }> = ({ id }) => {
       nm_produto: name,
       type_quantidade: unit || undefined,
       val_quantidade: Number(qty),
+      min_quantity: Number(minQty), // ⭐ NOVO
       labels: labels ? labels.split(',').map((s) => s.trim()).filter(Boolean) : [],
       anotation: notes || undefined,
     };
@@ -171,6 +174,18 @@ export const ProductFormScreen: React.FC<{ id?: string }> = ({ id }) => {
                 error={!!error && Number.isNaN(Number(qty))}
               />
             </View>
+
+            <TextInput
+              label="Quantidade Mínima"
+              value={minQty}
+              onChangeText={setMinQty}
+              keyboardType="numeric"
+              mode="outlined"
+              style={styles.input}
+              left={<TextInput.Icon icon="alert-circle" />}
+              placeholder="Define limite para alertas de estoque baixo"
+              helperText="Deixe 0 para desabilitar alertas"
+            />
 
             <Divider style={styles.divider} />
 

@@ -8,7 +8,6 @@ import {
   Surface,
   useTheme,
   ActivityIndicator,
-  Portal,
   Chip
 } from 'react-native-paper';
 import { ProductList } from '../components/ProductList';
@@ -108,17 +107,15 @@ const ShopScreen: React.FC = () => {
             onRefresh={onRefresh}
           />
         )}
-
-        <Portal>
-          <FAB
-            icon="plus"
-            style={[styles.fab, { backgroundColor: theme.colors.primary }]}
-            onPress={() => router.push('/inventory/add')}
-            label="Adicionar"
-            color="#FFFFFF"
-          />
-        </Portal>
       </View>
+
+      <FAB
+        icon="plus"
+        style={[styles.fab, { backgroundColor: theme.colors.primary }]}
+        onPress={() => router.push('/inventory/add')}
+        label="Adicionar"
+        color="#FFFFFF"
+      />
     </Surface>
   );
 };
