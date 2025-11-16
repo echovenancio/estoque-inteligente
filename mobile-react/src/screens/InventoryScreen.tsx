@@ -121,11 +121,6 @@ export const InventoryScreen: React.FC = () => {
     <Surface style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <Appbar.Header elevated>
         <Appbar.Content title="Estoque" />
-        <Appbar.Action 
-          icon="alert-circle" 
-          onPress={() => router.push('/inventory/low-stock')}
-          iconColor="#d84315"
-        />
         <Appbar.Action icon="logout" onPress={onLogout} />
       </Appbar.Header>
 
@@ -148,10 +143,10 @@ export const InventoryScreen: React.FC = () => {
             Tentar novamente
           </Button>
         </View>
-      ) : produtos.length === 0 ? (
+      ) : filteredProdutos.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Text variant="headlineSmall" style={{ color: theme.colors.onSurfaceVariant, marginBottom: 8 }}>
-            Nenhum produto encontrado
+            {filterLowStock ? 'Nenhum produto com baixo estoque' : 'Nenhum produto encontrado'}
           </Text>
           <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
             Adicione seu primeiro produto clicando no botão +
@@ -184,6 +179,14 @@ export const InventoryScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  filterContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: '#f5f5f5',
   },
   loadingContainer: {
     flex: 1,

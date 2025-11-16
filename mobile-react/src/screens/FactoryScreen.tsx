@@ -7,7 +7,8 @@ import {
   Surface,
   useTheme,
   ActivityIndicator,
-  Chip
+  Chip,
+  Switch
 } from 'react-native-paper';
 import { ProductList } from '../components/ProductList';
 import { API } from '../services/api';
@@ -22,6 +23,7 @@ const FactoryScreen: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [query, setQuery] = useState('');
+  const [filterLowStock, setFilterLowStock] = useState(false);
 
   const fetchInventory = async () => {
     setLoading(true);
@@ -60,7 +62,9 @@ const FactoryScreen: React.FC = () => {
     router.replace('/login');
   };
 
-  const filtered = produtos.filter((p) => p.nm_produto.toLowerCase().includes(query.toLowerCase()));
+  const filtered = produtos
+    .filter((p) => p.nm_produto.toLowerCase().includes(query.toLowerCase()))
+    .filter((p) => !filterLowStock || (p.min_quantity !== undefined && p.min_quantity > 0 && p.val_quantidade < p.min_quantity));
 
   return (
     <Surface style={[styles.container, { backgroundColor: theme.colors.background }]}>
@@ -74,9 +78,6 @@ const FactoryScreen: React.FC = () => {
           <Text variant="headlineMedium" style={{ color: theme.colors.primary, marginBottom: 8 }}>
             Bem-vindo, Fábrica! 🏭
           </Text>
-          <Chip icon="eye" mode="outlined" style={styles.chip}>
-            Modo somente leitura
-          </Chip>
         </View>
 
         <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant, marginBottom: 16 }}>
@@ -90,6 +91,11 @@ const FactoryScreen: React.FC = () => {
           style={styles.searchBar}
           elevation={2}
         />
+
+        <View style={styles.filterContainer}>
+          <Text variant="bodyMedium">Mostrar apenas baixo estoque</Text>
+          <Switch value={filterLowStock} onValueChange={setFilterLowStock} />
+        </View>
 
         {loading ? (
           <View style={styles.loadingContainer}>
@@ -122,12 +128,18 @@ const styles = StyleSheet.create({
   headerContainer: {
     marginBottom: 16,
   },
-  chip: {
-    alignSelf: 'flex-start',
-    marginTop: 8,
-  },
   searchBar: {
     marginBottom: 16,
+  },
+  filterContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: '#f5f5f5',
+    borderRadius: 8,
   },
   loadingContainer: {
     flex: 1,

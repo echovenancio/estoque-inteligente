@@ -252,18 +252,6 @@ export const ProductFormScreen: React.FC<{ id?: string }> = ({ id }) => {
               style={styles.input}
               left={<TextInput.Icon icon="note-text" />}
             />
-
-            <Button
-              mode="contained"
-              onPress={onSave}
-              loading={saving}
-              disabled={saving}
-              style={styles.saveButton}
-              contentStyle={styles.saveButtonContent}
-              icon="content-save"
-            >
-              {saving ? 'Salvando...' : 'Salvar Produto'}
-            </Button>
           </Card.Content>
         </Card>
       </ScrollView>
@@ -330,12 +318,6 @@ const styles = StyleSheet.create({
   chip: {
     marginRight: 4,
     marginBottom: 8,
-  },
-  saveButton: {
-    marginTop: 16,
-  },
-  saveButtonContent: {
-    paddingVertical: 8,
   },
 });
 
