@@ -1,10 +1,28 @@
 {
   "expo": {
-    "scheme": "acme",
+    "name": "Estoque Inteligente",
+    "slug": "estoque-inteligente-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "scheme": "estoque-inteligente",
     "plugins": [
       "expo-router"
     ],
-    "name": "mobile-react",
-    "slug": "mobile-react"
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.echovenancio.estoqueinteligentemobile"
+    },
+    "android": {
+      "package": "com.echovenancio.estoqueinteligentemobile",
+      "permissions": []
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static"
+    }
   }
 }
