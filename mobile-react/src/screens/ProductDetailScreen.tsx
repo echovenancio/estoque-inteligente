@@ -14,7 +14,7 @@ import {
   Portal
 } from 'react-native-paper';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { API } from '../services/api';
+import { API, BASE_URL } from '../services/api';
 import { ResProduto } from '../types/models';
 import { CredStore } from '../services/credStore';
 import { stringToThemeColors } from '../utils/colorsProvider';
@@ -119,6 +119,12 @@ const ProductDetailScreen: React.FC = () => {
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <Card style={styles.mainCard} elevation={2}>
+          {produto.image_url && (
+            <Card.Cover 
+              source={{ uri: produto.image_url.startsWith('http') ? produto.image_url : `${BASE_URL}${produto.image_url}` }} 
+              style={styles.cardCover}
+            />
+          )}
           <Card.Content>
             <View style={styles.headerSection}>
               <Text variant="headlineMedium" style={{ color: theme.colors.primary }}>
@@ -287,6 +293,10 @@ const styles = StyleSheet.create({
   },
   mainCard: {
     marginBottom: 16,
+    overflow: 'hidden',
+  },
+  cardCover: {
+    height: 250,
   },
   infoCard: {
     marginBottom: 16,

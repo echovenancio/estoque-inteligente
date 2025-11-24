@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, ScrollView, StyleSheet } from 'react-native';
+import { View, ScrollView, StyleSheet, Image, Alert } from 'react-native';
 import {
   Text,
   TextInput,
@@ -11,10 +11,12 @@ import {
   ActivityIndicator,
   Chip,
   Snackbar,
-  Divider
+  Divider,
+  IconButton
 } from 'react-native-paper';
 import { useRouter } from 'expo-router';
-import { API } from '../services/api';
+import * as ImagePicker from 'expo-image-picker';
+import { API, BASE_URL } from '../services/api';
 import { ResProduto, Produto } from '../types/models';
 import CategoryPicker from '../components/CategoryPicker';
 
@@ -28,12 +30,13 @@ export const ProductFormScreen: React.FC<{ id?: string }> = ({ id }) => {
   const [name, setName] = useState('');
   const [unit, setUnit] = useState('');
   const [qty, setQty] = useState<string>('0');
-  const [minQty, setMinQty] = useState<string>('0'); // ⭐ NOVO
+  const [minQty, setMinQty] = useState<string>('0');
   const [labels, setLabels] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [newTagInput, setNewTagInput] = useState('');
   const [pickerVisible, setPickerVisible] = useState(false);
   const [notes, setNotes] = useState('');
+  const [imageUri, setImageUri] = useState<string | null>(null);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -45,10 +48,13 @@ export const ProductFormScreen: React.FC<{ id?: string }> = ({ id }) => {
           setName(p.nm_produto);
           setUnit(p.type_quantidade || '');
           setQty(String(p.val_quantidade || 0));
-          setMinQty(String(p.min_quantity || 0)); // ⭐ NOVO
+          setMinQty(String(p.min_quantity || 0));
           setLabels((p.labels || []).join(', '));
           setSelectedTags((p.labels || []).map((s) => s));
           setNotes(p.anotation || '');
+          if (p.image_url) {
+            setImageUri(p.image_url.startsWith('http') ? p.image_url : `${BASE_URL}${p.image_url}`);
+          }
         } catch (e: any) {
           console.warn('load product', e);
           setError('Não foi possível carregar o produto');
@@ -79,6 +85,38 @@ export const ProductFormScreen: React.FC<{ id?: string }> = ({ id }) => {
     }
   };
 
+  const pickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 0.8,
+    });
+
+    if (!result.canceled) {
+      setImageUri(result.assets[0].uri);
+    }
+  };
+
+  const takePhoto = async () => {
+    const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+    
+    if (permissionResult.granted === false) {
+      Alert.alert("Permissão necessária", "É necessário permitir o acesso à câmera para tirar fotos.");
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 0.8,
+    });
+
+    if (!result.canceled) {
+      setImageUri(result.assets[0].uri);
+    }
+  };
+
   const onSave = async () => {
     const v = validate();
     if (v) {
@@ -86,16 +124,28 @@ export const ProductFormScreen: React.FC<{ id?: string }> = ({ id }) => {
       return;
     }
     setSaving(true);
-    const payload: Produto = {
-      nm_produto: name,
-      type_quantidade: unit || undefined,
-      val_quantidade: Number(qty),
-      min_quantity: Number(minQty), // ⭐ NOVO
-      labels: labels ? labels.split(',').map((s) => s.trim()).filter(Boolean) : [],
-      anotation: notes || undefined,
-    };
 
     try {
+      let finalImageUrl = imageUri;
+      
+      // Se a imagem é local (nova), faz upload
+      if (imageUri && !imageUri.startsWith('http')) {
+        finalImageUrl = await API.uploadImage(imageUri);
+      } else if (imageUri && imageUri.startsWith(BASE_URL)) {
+        // Se já é uma URL do servidor, remove a base para salvar apenas o caminho relativo
+        finalImageUrl = imageUri.replace(BASE_URL, '');
+      }
+
+      const payload: Produto = {
+        nm_produto: name,
+        type_quantidade: unit || undefined,
+        val_quantidade: Number(qty),
+        min_quantity: Number(minQty),
+        labels: labels ? labels.split(',').map((s) => s.trim()).filter(Boolean) : [],
+        anotation: notes || undefined,
+        image_url: finalImageUrl || undefined,
+      };
+
       if (id) {
         await API.updateProduct(id as string, payload);
         setError('');
@@ -138,6 +188,33 @@ export const ProductFormScreen: React.FC<{ id?: string }> = ({ id }) => {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <Card style={styles.card} elevation={2}>
           <Card.Content>
+            <View style={styles.imageContainer}>
+              {imageUri ? (
+                <View>
+                  <Image source={{ uri: imageUri }} style={styles.productImage} />
+                  <IconButton
+                    icon="close-circle"
+                    iconColor={theme.colors.error}
+                    size={24}
+                    style={styles.removeImageButton}
+                    onPress={() => setImageUri(null)}
+                  />
+                </View>
+              ) : (
+                <View style={[styles.placeholderImage, { backgroundColor: theme.colors.surfaceVariant }]}>
+                  <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>Sem imagem</Text>
+                </View>
+              )}
+              <View style={styles.imageButtons}>
+                <Button mode="outlined" onPress={takePhoto} icon="camera" style={styles.imageButton}>
+                  Câmera
+                </Button>
+                <Button mode="outlined" onPress={pickImage} icon="image" style={styles.imageButton}>
+                  Galeria
+                </Button>
+              </View>
+            </View>
+
             <Text variant="titleLarge" style={{ color: theme.colors.primary, marginBottom: 16 }}>
               Informações do Produto
             </Text>
@@ -292,6 +369,37 @@ const styles = StyleSheet.create({
   },
   card: {
     marginBottom: 16,
+  },
+  imageContainer: {
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  productImage: {
+    width: 200,
+    height: 200,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  placeholderImage: {
+    width: 200,
+    height: 200,
+    borderRadius: 8,
+    marginBottom: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  removeImageButton: {
+    position: 'absolute',
+    top: -8,
+    right: -8,
+    backgroundColor: 'white',
+  },
+  imageButtons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  imageButton: {
+    flex: 1,
   },
   input: {
     marginBottom: 16,

@@ -30,6 +30,7 @@ class Produto(BaseModel):
         default=[], description="Lista de categorias que descrevem o produto"
     )
     anotation: str = Field(default="", description="Descrição do produto")
+    image_url: str = Field(default="", description="URL da imagem do produto")
 
 
 class ResProduto(BaseModel):
@@ -40,6 +41,7 @@ class ResProduto(BaseModel):
     min_quantity: float
     labels: list[str]
     anotation: str
+    image_url: str = ""
     cluster_id: int
     created_at: str
     updated_at: str

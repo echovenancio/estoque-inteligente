@@ -30,6 +30,7 @@ def map_product_to_response(row) -> ResProduto:
         cluster_id=row[7],
         created_at=str(row[8]),
         updated_at=str(row[9]),
+        image_url=row[10] if len(row) > 10 and row[10] else "",
     )
 
 
@@ -49,8 +50,14 @@ class DevDBManager(GenericDBManager):
         cursor = conn.cursor()
         if self.setted is not True:
             cursor.execute(
-                "CREATE TABLE IF NOT EXISTS estoque (uuid TEXT, nm_produto TEXT, type_quantidade TEXT, val_quantidade REAL, min_quantity REAL, labels TEXT, anotation TEXT, cluster_id INTEGER, created_at TEXT, updated_at TEXT)"
+                "CREATE TABLE IF NOT EXISTS estoque (uuid TEXT, nm_produto TEXT, type_quantidade TEXT, val_quantidade REAL, min_quantity REAL, labels TEXT, anotation TEXT, cluster_id INTEGER, created_at TEXT, updated_at TEXT, image_url TEXT)"
             )
+            # Tenta adicionar a coluna image_url caso a tabela já exista sem ela
+            try:
+                cursor.execute("ALTER TABLE estoque ADD COLUMN image_url TEXT")
+            except sqlite3.OperationalError:
+                pass # Coluna já existe
+
             cursor.execute(
                 "CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, email TEXT, hash_password TEXT)"
             )
@@ -121,7 +128,7 @@ class DevDBManager(GenericDBManager):
         try:
             cursor = conn.cursor()
             cursor.execute(
-                "INSERT INTO estoque (uuid, nm_produto, type_quantidade, val_quantidade, min_quantity, labels, anotation, cluster_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))",
+                "INSERT INTO estoque (uuid, nm_produto, type_quantidade, val_quantidade, min_quantity, labels, anotation, cluster_id, created_at, updated_at, image_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'), ?)",
                 (
                     uuid,
                     produto.nm_produto,
@@ -131,6 +138,7 @@ class DevDBManager(GenericDBManager):
                     json.dumps(produto.labels),
                     produto.anotation,
                     -1,
+                    produto.image_url,
                 ),
             )
             conn.commit()
@@ -145,7 +153,7 @@ class DevDBManager(GenericDBManager):
         try:
             cursor = conn.cursor()
             cursor.execute(
-                "UPDATE estoque SET nm_produto = ?, type_quantidade = ?, val_quantidade = ?, min_quantity = ?, labels = ?, anotation = ?, updated_at = datetime('now') WHERE uuid = ?",
+                "UPDATE estoque SET nm_produto = ?, type_quantidade = ?, val_quantidade = ?, min_quantity = ?, labels = ?, anotation = ?, updated_at = datetime('now'), image_url = ? WHERE uuid = ?",
                 (
                     produto.nm_produto,
                     produto.type_quantidade.lower(),
@@ -153,6 +161,7 @@ class DevDBManager(GenericDBManager):
                     produto.min_quantity,
                     json.dumps(produto.labels),
                     produto.anotation,
+                    produto.image_url,
                     id,
                 ),
             )

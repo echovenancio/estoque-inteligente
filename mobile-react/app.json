@@ -7,7 +7,14 @@
     "userInterfaceStyle": "light",
     "scheme": "estoque-inteligente",
     "plugins": [
-      "expo-router"
+      "expo-router",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "O app precisa acessar suas fotos para adicionar imagens aos produtos.",
+          "cameraPermission": "O app precisa acessar sua câmera para tirar fotos dos produtos."
+        }
+      ]
     ],
     "assetBundlePatterns": [
       "**/*"

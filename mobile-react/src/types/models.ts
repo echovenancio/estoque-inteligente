@@ -17,6 +17,7 @@ export interface ResProduto {
   labels: string[];
   best_describer: string;
   anotation?: string | null;
+  image_url?: string; // ⭐ NOVO: URL da imagem
   cluster_id?: number;
   created_at?: string;
   updated_at?: string;
@@ -29,4 +30,5 @@ export interface Produto {
   min_quantity?: number; // ⭐ NOVO: Quantidade mínima (threshold)
   labels: string[];
   anotation?: string | null;
+  image_url?: string; // ⭐ NOVO: URL da imagem
 }

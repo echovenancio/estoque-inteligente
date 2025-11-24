@@ -1,6 +1,8 @@
 import axios from 'axios';
+import { Platform } from 'react-native';
 import { LoginReq, LoginRes, Produto, ResProduto } from '../types/models';
 import { CredStore } from './credStore';
+import * as FileSystem from 'expo-file-system/legacy';
 
 // Get API URL from environment variable
 const getBaseUrl = (): string => {
@@ -66,5 +68,56 @@ export const API = {
   async getLowStockProducts(): Promise<ResProduto[]> {
     const res = await api.get('/estoque/low-stock');
     return res.data as ResProduto[];
+  },
+
+  async uploadImage(uri: string): Promise<string> {
+    try {
+      const token = await CredStore.getToken();
+
+      if (Platform.OS === 'web') {
+        // Web implementation
+        const response = await fetch(uri);
+        const blob = await response.blob();
+        
+        const formData = new FormData();
+        const filename = uri.split('/').pop() || 'upload.jpg';
+        formData.append('file', blob, filename);
+
+        const uploadRes = await fetch(`${BASE_URL}/v1/upload-image`, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'Authorization': `Bearer ${token}`,
+            }
+        });
+        
+        if (!uploadRes.ok) {
+            const errorText = await uploadRes.text();
+            throw new Error(`Upload failed: ${uploadRes.status} - ${errorText}`);
+        }
+        const data = await uploadRes.json();
+        return data.url;
+      } else {
+        // Mobile implementation
+        const response = await FileSystem.uploadAsync(`${BASE_URL}/v1/upload-image`, uri, {
+            fieldName: 'file',
+            httpMethod: 'POST',
+            uploadType: FileSystem.FileSystemUploadType.MULTIPART,
+            headers: {
+            'Authorization': `Bearer ${token}`,
+            },
+        });
+
+        if (response.status !== 200) {
+            throw new Error(`Upload failed: ${response.status} - ${response.body}`);
+        }
+
+        const data = JSON.parse(response.body);
+        return data.url;
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      throw error;
+    }
   },
 };

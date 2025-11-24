@@ -8,15 +8,20 @@ from domain.models import ResProduto, Produto, Login, LoginRes
 router = APIRouter()
 db = get_db_manager()
 
-from fastapi import APIRouter, Request, Response, Security
+from fastapi import APIRouter, Request, Response, Security, UploadFile, File
 from database.manager_getter import get_db_manager
 from domain.models import ResProduto, Produto, Login, LoginRes
 import utils
 import ml
+import shutil
+import os
+from uuid import uuid4
 
 router = APIRouter()
 db = get_db_manager()
 
+# Ensure static images directory exists
+os.makedirs("static/images", exist_ok=True)
 
 # --- OPTIONS helpers (one per route so browsers preflight same path) ---
 @router.options("/login")
@@ -74,7 +79,31 @@ def options_health(response: Response):
     return Response(status_code=204)
 
 
+@router.options("/upload-image")
+def options_upload_image(response: Response):
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Methods"] = "POST, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "Authorization, Content-Type"
+    response.headers["Access-Control-Max-Age"] = "86400"
+    return Response(status_code=204)
+
+
 # --- actual endpoints ---
+@router.post("/upload-image")
+def upload_image(file: UploadFile = File(...), token=Security(utils.api_key_scheme)):
+    utils.get_auth(token) # Validate token
+    
+    file_extension = file.filename.split(".")[-1]
+    file_name = f"{uuid4()}.{file_extension}"
+    file_path = f"static/images/{file_name}"
+    
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+        
+    # Return the URL relative to the server root (assuming static files are served at /static)
+    return {"url": f"/static/images/{file_name}"}
+
+
 @router.post("/login")
 def login(login: Login) -> LoginRes:
     response = db.login(login.email, login.password)

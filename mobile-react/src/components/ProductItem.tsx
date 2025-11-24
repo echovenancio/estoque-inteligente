@@ -1,8 +1,9 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, Image } from 'react-native';
 import { List, useTheme, Chip } from 'react-native-paper';
 import { ResProduto } from '../types/models';
 import { stringToThemeColors } from '../utils/colorsProvider';
+import { BASE_URL } from '../services/api';
 
 type Props = {
   produto: ResProduto;
@@ -19,6 +20,10 @@ export const ProductItem: React.FC<Props> = ({ produto, onPress }) => {
                      produto.min_quantity > 0 && 
                      produto.val_quantidade < produto.min_quantity;
 
+  const imageUrl = produto.image_url 
+    ? (produto.image_url.startsWith('http') ? produto.image_url : `${BASE_URL}${produto.image_url}`)
+    : null;
+
   return (
     <List.Item
       title={produto.nm_produto}
@@ -30,6 +35,11 @@ export const ProductItem: React.FC<Props> = ({ produto, onPress }) => {
         isLowStock && styles.lowStockDescription
       ]}
       onPress={() => onPress && onPress(produto)}
+      left={() => imageUrl ? (
+        <Image source={{ uri: imageUrl }} style={styles.image} />
+      ) : (
+        <List.Icon icon="package-variant" />
+      )}
       right={() => (
         <View style={styles.rightContainer}>
           {isLowStock && (
@@ -68,6 +78,14 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
+  },
+  image: {
+    width: 48,
+    height: 48,
+    borderRadius: 4,
+    marginLeft: 16,
+    alignSelf: 'center',
+    backgroundColor: '#f0f0f0',
   },
   title: {
     fontSize: 16,
