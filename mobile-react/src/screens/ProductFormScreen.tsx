@@ -18,6 +18,7 @@ import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { API, BASE_URL } from '../services/api';
 import { ResProduto, Produto } from '../types/models';
+import { LojaStore } from '../services/lojaStore';
 import CategoryPicker from '../components/CategoryPicker';
 
 export const ProductFormScreen: React.FC<{ id?: string }> = ({ id }) => {
@@ -38,8 +39,19 @@ export const ProductFormScreen: React.FC<{ id?: string }> = ({ id }) => {
   const [notes, setNotes] = useState('');
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [error, setError] = useState('');
+  const [lojaId, setLojaId] = useState<string | null>(null);
 
   useEffect(() => {
+    (async () => {
+      const loja = await LojaStore.getLoja();
+      if (loja && loja.id) {
+        setLojaId(loja.id);
+      } else {
+        Alert.alert('Erro', 'Nenhuma loja selecionada');
+        router.back();
+      }
+    })();
+
     if (id) {
       (async () => {
         setLoading(true);
@@ -123,6 +135,10 @@ export const ProductFormScreen: React.FC<{ id?: string }> = ({ id }) => {
       setError(v);
       return;
     }
+    if (!lojaId) {
+      setError('Loja não identificada');
+      return;
+    }
     setSaving(true);
 
     try {
@@ -144,16 +160,17 @@ export const ProductFormScreen: React.FC<{ id?: string }> = ({ id }) => {
         labels: labels ? labels.split(',').map((s) => s.trim()).filter(Boolean) : [],
         anotation: notes || undefined,
         image_url: finalImageUrl || undefined,
+        loja_id: lojaId,
       };
 
       if (id) {
         await API.updateProduct(id as string, payload);
         setError('');
-        router.replace('/loja?refresh=1');
+        router.replace('/loja');
       } else {
         await API.addProduct(payload);
         setError('');
-        router.replace('/loja?refresh=1');
+        router.replace('/loja');
       }
     } catch (e: any) {
       console.warn('save product', e);

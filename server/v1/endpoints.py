@@ -8,9 +8,9 @@ from domain.models import ResProduto, Produto, Login, LoginRes
 router = APIRouter()
 db = get_db_manager()
 
-from fastapi import APIRouter, Request, Response, Security, UploadFile, File
+from fastapi import APIRouter, Request, Response, Security, UploadFile, File, Query, HTTPException
 from database.manager_getter import get_db_manager
-from domain.models import ResProduto, Produto, Login, LoginRes
+from domain.models import ResProduto, Produto, Login, LoginRes, Loja, Permissao
 import utils
 import ml
 import shutil
@@ -33,6 +33,38 @@ def options_login(response: Response):
     response.status_code = 204
     return response
 
+@router.options("/register")
+def options_register(response: Response):
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Methods"] = "POST, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "Authorization, Content-Type"
+    response.headers["Access-Control-Max-Age"] = "86400"
+    response.status_code = 204
+    return response
+
+@router.options("/lojas")
+def options_lojas(response: Response):
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "Authorization, Content-Type"
+    response.headers["Access-Control-Max-Age"] = "86400"
+    return Response(status_code=204)
+
+@router.options("/lojas/{id}")
+def options_lojas_id(id: str, response: Response):
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Methods"] = "PUT, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "Authorization, Content-Type"
+    response.headers["Access-Control-Max-Age"] = "86400"
+    return Response(status_code=204)
+
+@router.options("/lojas/{id}/permissoes")
+def options_lojas_permissoes(id: str, response: Response):
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "Authorization, Content-Type"
+    response.headers["Access-Control-Max-Age"] = "86400"
+    return Response(status_code=204)
 
 @router.options("/estoque")
 def options_estoque(response: Response):
@@ -110,11 +142,47 @@ def login(login: Login) -> LoginRes:
     print(f"Response from login: {response}")
     return response
 
+@router.post("/register")
+def register(login: Login) -> LoginRes:
+    try:
+        response = db.create_user(login.email, login.password)
+        return response
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.post("/lojas")
+def create_loja(loja: Loja, token=Security(utils.api_key_scheme)) -> Loja:
+    auth_token = utils.get_auth(token)
+    loja.dono_email = auth_token["email"]
+    return db.create_loja(loja)
+
+@router.put("/lojas/{id}")
+def update_loja(id: str, loja: Loja, token=Security(utils.api_key_scheme)) -> Loja:
+    auth_token = utils.get_auth(token)
+    return db.update_loja(id, loja, auth_token)
+
+@router.get("/lojas")
+def get_lojas(token=Security(utils.api_key_scheme)) -> list[Loja]:
+    auth_token = utils.get_auth(token)
+    return db.get_lojas_by_user(auth_token["email"])
+
+@router.post("/lojas/{id}/permissoes")
+def add_permissao(id: str, permissao: Permissao, token=Security(utils.api_key_scheme)):
+    auth_token = utils.get_auth(token)
+    # TODO: Check if current user is admin of the store
+    db.add_permission(id, permissao.email, permissao.papel)
+    return {"status": "ok"}
+
+@router.get("/lojas/{id}/permissoes")
+def get_permissoes(id: str, token=Security(utils.api_key_scheme)):
+    auth_token = utils.get_auth(token)
+    # TODO: Check if current user has access
+    return db.get_permissions(id)
 
 @router.get("/estoque")
-def list_estoque(request: Request, token=Security(utils.api_key_scheme)) -> list[ResProduto]:
+def list_estoque(request: Request, loja_id: str = Query(None), token=Security(utils.api_key_scheme)) -> list[ResProduto]:
     auth_token = utils.get_auth(token)
-    estoque = db.get_estoque(auth_token)
+    estoque = db.get_estoque(auth_token, loja_id)
     best_describer = ml.return_dict_of_clusterId_with_describer(estoque)
     if best_describer is not None:
         for produto in estoque:
@@ -131,6 +199,7 @@ def add_estoque(produto: Produto, token=Security(utils.api_key_scheme)) -> ResPr
     ret_prod = db.add_estoque(produto, auth_token)
     utils.background_job(utils.update_cluster, auth_token, db)
     return ret_prod
+
 
 
 @router.get("/estoque/low-stock")

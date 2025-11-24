@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Literal
+from typing import Literal, Optional
 
 
 class LoginRes(BaseModel):
@@ -11,6 +11,21 @@ class LoginRes(BaseModel):
     registered: bool
     refreshToken: str
     expiresIn: str
+
+
+class Loja(BaseModel):
+    id: Optional[str] = None
+    nome: str
+    foto_url: Optional[str] = None
+    localizacao: str
+    dono_email: Optional[str] = None
+    papel: Optional[str] = None
+
+
+class Permissao(BaseModel):
+    loja_id: str
+    email: str
+    papel: Literal["admin", "visualizador"]
 
 
 class Produto(BaseModel):
@@ -31,6 +46,7 @@ class Produto(BaseModel):
     )
     anotation: str = Field(default="", description="Descrição do produto")
     image_url: str = Field(default="", description="URL da imagem do produto")
+    loja_id: str = Field(description="ID da loja a qual o produto pertence")
 
 
 class ResProduto(BaseModel):
@@ -46,6 +62,8 @@ class ResProduto(BaseModel):
     created_at: str
     updated_at: str
     best_describer: str = ""
+    loja_id: str
+
 
 
 class Login(BaseModel):

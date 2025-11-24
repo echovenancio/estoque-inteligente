@@ -16,6 +16,7 @@ import { API } from '../services/api';
 import { ResProduto } from '../types/models';
 import { useRouter } from 'expo-router';
 import { CredStore } from '../services/credStore';
+import { LojaStore } from '../services/lojaStore';
 
 const ShopScreen: React.FC = () => {
   const theme = useTheme();
@@ -25,11 +26,20 @@ const ShopScreen: React.FC = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [query, setQuery] = useState('');
   const [filterLowStock, setFilterLowStock] = useState(false);
+  const [lojaName, setLojaName] = useState('');
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const fetchInventory = async () => {
     setLoading(true);
     try {
-      const data = await API.getInventory();
+      const currentLoja = await LojaStore.getLoja();
+      if (!currentLoja || !currentLoja.id) {
+        router.replace('/store-selection');
+        return;
+      }
+      setLojaName(currentLoja.nome);
+      setIsAdmin(currentLoja.papel === 'admin');
+      const data = await API.getInventory(currentLoja.id);
       setProdutos(data || []);
     } catch (e: any) {
       console.warn('shop load', e);
@@ -37,6 +47,7 @@ const ShopScreen: React.FC = () => {
       setLoading(false);
     }
   };
+
 
   useEffect(() => {
     (async () => {
@@ -48,18 +59,13 @@ const ShopScreen: React.FC = () => {
 
   const onRefresh = async () => {
     setRefreshing(true);
-    try {
-      const data = await API.getInventory();
-      setProdutos(data || []);
-    } catch (e) {
-      console.warn('refresh shop', e);
-    } finally {
-      setRefreshing(false);
-    }
+    await fetchInventory();
+    setRefreshing(false);
   };
 
   const onLogout = async () => {
     await CredStore.removeToken();
+    await LojaStore.clearLoja();
     router.replace('/login');
   };
 
@@ -70,15 +76,19 @@ const ShopScreen: React.FC = () => {
   return (
     <Surface style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <Appbar.Header elevated>
-        <Appbar.Content title="Loja 🍰" />
+        <Appbar.Action icon="arrow-left" onPress={() => router.replace('/store-selection')} />
+        <Appbar.Content title={lojaName || "Minha Loja"} subtitle="Gerenciamento" />
+        {isAdmin && <Appbar.Action icon="store-cog" onPress={() => router.push('/store-settings')} />}
         <Appbar.Action icon="logout" onPress={onLogout} />
       </Appbar.Header>
-
       <View style={styles.content}>
         <View style={styles.headerContainer}>
           <Text variant="headlineMedium" style={{ color: theme.colors.primary, marginBottom: 8 }}>
-            Bem-vindo, Loja! 🍰
+            Bem-vindo, {lojaName || 'Loja'}! 🍰
           </Text>
+          <Chip icon={isAdmin ? "shield-account" : "eye"} style={{ alignSelf: 'flex-start' }}>
+            {isAdmin ? "Administrador" : "Visualizador"}
+          </Chip>
         </View>
 
         <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant, marginBottom: 16 }}>
@@ -115,13 +125,14 @@ const ShopScreen: React.FC = () => {
         )}
       </View>
 
-      <FAB
-        icon="plus"
-        style={[styles.fab, { backgroundColor: theme.colors.primary }]}
-        onPress={() => router.push('/inventory/add')}
-        label="Adicionar"
-        color="#FFFFFF"
-      />
+      {isAdmin && (
+        <FAB
+          style={[styles.fab, { backgroundColor: theme.colors.primary }]}
+          icon="plus"
+          color="white"
+          onPress={() => router.push('/inventory/add')}
+        />
+      )}
     </Surface>
   );
 };

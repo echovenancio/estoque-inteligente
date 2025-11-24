@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { Platform } from 'react-native';
-import { LoginReq, LoginRes, Produto, ResProduto } from '../types/models';
+import { LoginReq, LoginRes, Produto, ResProduto, Loja, Permissao } from '../types/models';
 import { CredStore } from './credStore';
 import * as FileSystem from 'expo-file-system/legacy';
 
@@ -35,8 +35,37 @@ export const API = {
     return res.data as LoginRes;
   },
 
-  async getInventory(): Promise<ResProduto[]> {
-    const res = await api.get('/estoque');
+  async register(payload: LoginReq): Promise<LoginRes> {
+    const res = await api.post('/register', payload);
+    return res.data as LoginRes;
+  },
+
+  async getLojas(): Promise<Loja[]> {
+    const res = await api.get('/lojas');
+    return res.data as Loja[];
+  },
+
+  async createLoja(loja: Loja): Promise<Loja> {
+    const res = await api.post('/lojas', loja);
+    return res.data as Loja;
+  },
+
+  async updateLoja(id: string, loja: Loja): Promise<Loja> {
+    const res = await api.put(`/lojas/${id}`, loja);
+    return res.data as Loja;
+  },
+
+  async addPermission(lojaId: string, permissao: Permissao): Promise<void> {
+    await api.post(`/lojas/${lojaId}/permissoes`, permissao);
+  },
+
+  async getPermissions(lojaId: string): Promise<Permissao[]> {
+    const res = await api.get(`/lojas/${lojaId}/permissoes`);
+    return res.data as Permissao[];
+  },
+
+  async getInventory(lojaId?: string): Promise<ResProduto[]> {
+    const res = await api.get('/estoque', { params: { loja_id: lojaId } });
     return res.data as ResProduto[];
   },
 

@@ -27,10 +27,23 @@ def update_cluster(auth_token: str, db: GenericDBManager):
         db.update_cluster(produto.id, int(cluster_id), auth_token)
 
 
-def get_auth(token) -> str:
+def get_auth(token) -> dict:
     if not token or not token.startswith("Bearer "):
         raise Unauthorized()
-    return token.split(" ")[1]
+    
+    token_str = token.split(" ")[1]
+    
+    # Dev/Mock token handling
+    if token_str.startswith("faketoken:"):
+        email = token_str.split(":", 1)[1]
+        return {"email": email}
+    
+    # Fallback for legacy/simple tests
+    if token_str == "faketoken":
+        return {"email": "loja@email.com"}
+
+    # In a real app, verify JWT here
+    return {"email": "loja@email.com"}
 
 
 api_key_scheme = APIKeyHeader(name="Authorization", auto_error=False)

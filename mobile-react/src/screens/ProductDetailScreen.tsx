@@ -16,6 +16,7 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { API, BASE_URL } from '../services/api';
 import { ResProduto } from '../types/models';
+import { LojaStore } from '../services/lojaStore';
 import { CredStore } from '../services/credStore';
 import { stringToThemeColors } from '../utils/colorsProvider';
 
@@ -28,6 +29,7 @@ const ProductDetailScreen: React.FC = () => {
   const [produto, setProduto] = useState<ResProduto | null>(null);
   const [loading, setLoading] = useState(false);
   const [userType, setUserType] = useState<string | null>(null);
+  const [isStoreViewer, setIsStoreViewer] = useState(false);
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
 
   useEffect(() => {
@@ -50,6 +52,11 @@ const ProductDetailScreen: React.FC = () => {
       try {
         const type = await CredStore.getUserType();
         setUserType(type);
+        
+        const loja = await LojaStore.getLoja();
+        if (loja && loja.papel === 'visualizador') {
+          setIsStoreViewer(true);
+        }
       } catch (e) {
         console.warn('failed to load user type', e);
       }
@@ -60,7 +67,7 @@ const ProductDetailScreen: React.FC = () => {
     if (!id) return;
     try {
       await API.deleteProduct(id);
-      router.replace('/inventory?refresh=1');
+      router.replace('/loja');
     } catch (e: any) {
       console.warn('delete product', e);
     }
@@ -96,13 +103,13 @@ const ProductDetailScreen: React.FC = () => {
 
   const label = produto.best_describer || produto.labels?.[0] || 'Sem categoria';
   const { bg, fg } = stringToThemeColors(label || '');
-  const isReadOnly = userType === 'fabrica';
+  const isReadOnly = userType === 'fabrica' || isStoreViewer;
 
   return (
     <Surface style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <Appbar.Header elevated>
         <Appbar.BackAction onPress={() => router.back()} />
-        <Appbar.Content title={produto.nm_produto} />
+        <Appbar.Content title={produto.nm_produto} subtitle={isReadOnly ? (isStoreViewer ? "Visualizador" : "Fábrica") : "Administrador"} />
         {!isReadOnly && (
           <>
             <Appbar.Action
@@ -237,9 +244,14 @@ const ProductDetailScreen: React.FC = () => {
 
         {isReadOnly && (
           <Card style={styles.infoCard} elevation={1}>
-            <Card.Content>
-              <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
-                🏭 Modo somente leitura
+            <Card.Content style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Chip icon={isStoreViewer ? "eye" : "factory"} style={{ marginRight: 8 }}>
+                {isStoreViewer ? "Visualizador" : "Fábrica"}
+              </Chip>
+              <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant, flex: 1 }}>
+                {isStoreViewer 
+                  ? "Você está visualizando como convidado. Apenas administradores podem editar." 
+                  : "Visualização de fábrica. Somente leitura."}
               </Text>
             </Card.Content>
           </Card>

@@ -14,6 +14,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { ResProduto } from '../types/models';
 import { API } from '../services/api';
 import { CredStore } from '../services/credStore';
+import { LojaStore } from '../services/lojaStore';
 import { useRouter } from 'expo-router';
 
 const MOCK: ResProduto[] = [
@@ -28,6 +29,7 @@ const MOCK: ResProduto[] = [
     cluster_id: 0,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
+    loja_id: 'mock',
   },
   {
     id: '2',
@@ -40,6 +42,7 @@ const MOCK: ResProduto[] = [
     cluster_id: 0,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
+    loja_id: 'mock',
   },
 ];
 
@@ -50,12 +53,22 @@ export const InventoryScreen: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [lojaName, setLojaName] = useState('');
+  const [filterLowStock, setFilterLowStock] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const fetchInventory = async () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await API.getInventory();
+      const currentLoja = await LojaStore.getLoja();
+      if (!currentLoja || !currentLoja.id) {
+        router.replace('/store-selection');
+        return;
+      }
+      setLojaName(currentLoja.nome);
+      setIsAdmin(currentLoja.papel === 'admin');
+      const data = await API.getInventory(currentLoja.id);
       setProdutos(data);
     } catch (e: any) {
       console.warn('getInventory error', e);
@@ -68,8 +81,11 @@ export const InventoryScreen: React.FC = () => {
   const onRefresh = async () => {
     setRefreshing(true);
     try {
-      const data = await API.getInventory();
-      setProdutos(data);
+      const currentLoja = await LojaStore.getLoja();
+      if (currentLoja && currentLoja.id) {
+        const data = await API.getInventory(currentLoja.id);
+        setProdutos(data);
+      }
     } catch (e) {
       console.warn('refresh error', e);
     } finally {
@@ -78,18 +94,16 @@ export const InventoryScreen: React.FC = () => {
   };
 
   useEffect(() => {
-    // Check authentication; if no token, go to login
-    // If user is 'loja', redirect to /loja instead
     (async () => {
       const token = await CredStore.getToken();
       if (!token) {
         router.replace('/login');
         return;
       }
-
-      const userType = await CredStore.getUserType();
-      if (userType === 'loja') {
-        router.replace('/loja');
+      
+      const loja = await LojaStore.getLoja();
+      if (!loja) {
+        router.replace('/store-selection');
         return;
       }
 
@@ -97,34 +111,35 @@ export const InventoryScreen: React.FC = () => {
     })();
   }, []);
 
-  // Support explicit refresh via query param (e.g., '/inventory?refresh=1') so other pages can force reload
   const params = useLocalSearchParams() as { refresh?: string };
   useEffect(() => {
     if (params.refresh) {
       fetchInventory();
-      // clear refresh param
       router.replace('/inventory');
     }
   }, [params?.refresh]);
 
   const onItemPress = (p: ResProduto) => {
-    console.log('pressed', p.id, p.nm_produto);
     router.push(`/inventory/${p.id}`);
   };
 
   const onLogout = async () => {
     await CredStore.removeToken();
+    await LojaStore.clearLoja();
     router.replace('/login');
   };
+
+  const filteredProdutos = produtos;
 
   return (
     <Surface style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <Appbar.Header elevated>
-        <Appbar.Content title="Estoque" />
+        <Appbar.Content title={lojaName || "Estoque"} subtitle="Gerenciamento de Produtos" />
+        {isAdmin && <Appbar.Action icon="store-cog" onPress={() => router.push('/store-settings')} />}
         <Appbar.Action icon="logout" onPress={onLogout} />
       </Appbar.Header>
 
-      {loading ? (
+      {loading && !refreshing ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" />
           <Text variant="bodyMedium" style={{ marginTop: 16 }}>
@@ -154,7 +169,7 @@ export const InventoryScreen: React.FC = () => {
         </View>
       ) : (
         <ProductList
-          produtos={produtos}
+          produtos={filteredProdutos}
           onItemPress={onItemPress}
           refreshing={refreshing}
           onRefresh={onRefresh}
