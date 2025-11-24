@@ -25,11 +25,21 @@
     },
     "android": {
       "package": "com.echovenancio.estoqueinteligentemobile",
-      "permissions": []
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "bundler": "metro",
       "output": "static"
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "3ed6dbda-8050-4644-8f40-d7954d868590"
+      }
     }
   }
 }
